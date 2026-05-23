@@ -47,8 +47,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: #222;
+            transform: translate(-50%, -50%);            background: #222;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -97,13 +96,13 @@
             background: rgba(0,0,0,0.7);
             z-index: 1999;
         }
-
         /* Menu Superior */
         .menu-topo {
             display: flex;
             justify-content: space-between;
             gap: 5px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .btn-small {
@@ -116,6 +115,7 @@
             font-size: 0.7rem;
             cursor: pointer;
             text-transform: uppercase;
+            min-width: 70px;
         }
 
         /* Cores dos Botões */
@@ -124,6 +124,7 @@
         .bg-vermelho { background-color: var(--vermelho); }
         .bg-lilas { background-color: var(--lilas); }
         .bg-laranja { background-color: var(--laranja); }
+        .bg-cinza { background-color: #666; }
 
         /* Card de Alimentação */
         .card-info {
@@ -144,7 +145,6 @@
             padding: 15px;
             border-radius: 10px;
         }
-
         .input-row {
             display: flex;
             gap: 5px;
@@ -182,6 +182,8 @@
             justify-content: center;
             z-index: 1000;
             text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .btn-wpp {
@@ -192,11 +194,91 @@
             border-radius: 50px;
             margin-top: 20px;
             display: inline-block;
+        }        
+        /* Estilos da Aba de Autenticação */
+        #auth-section {
+            display: none;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        #auth-section.active {
+            display: block;
+        }
+        
+        #main-app {
+            display: block;
+        }
+        
+        #main-app.hidden {
+            display: none;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .auth-toggle {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .auth-toggle a {
+            color: var(--azul);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--laranja);
+        }
+        
+        .error-msg {
+            color: var(--vermelho);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error-msg.show {
+            display: block;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 400px) {
+            .menu-topo {
+                flex-direction: column;
+            }
+            .btn-small {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            .input-row {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
 
+<!-- Tela de Bloqueio ADM (mantida) -->
 <div id="block-screen">
     <h2>ACESSO BLOQUEADO</h2>
     <p>Entre em contato com o ADM para liberar.</p>
@@ -205,12 +287,12 @@
     <a href="https://wa.me/5585996498573" class="btn-wpp">Chamar no WhatsApp</a>
 </div>
 
+<!-- Overlay e Calculadora (mantidos) -->
 <div class="overlay" id="overlay" onclick="toggleCalc()"></div>
 <div id="calc-modal">
     <div id="calc-display">0</div>
     <div class="calc-grid">
-        <button class="btn-calc clear" onclick="clearCalc()">C</button>
-        <button class="btn-calc op" onclick="addCalc('/')">/</button>
+        <button class="btn-calc clear" onclick="clearCalc()">C</button>        <button class="btn-calc op" onclick="addCalc('/')">/</button>
         <button class="btn-calc op" onclick="addCalc('*')">x</button>
         <button class="btn-calc" onclick="addCalc('7')">7</button>
         <button class="btn-calc" onclick="addCalc('8')">8</button>
@@ -233,59 +315,138 @@
     <button class="btn-calc-topo" onclick="toggleCalc()">🖩 CALCULADORA</button>
     <h1>MINHAS COMPRAS 1.0</h1>
 
-    <div class="card-info">
-        <label>Saldo Alimentação (Mês):</label>
-        <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
-            <input type="number" id="saldo-alim" placeholder="R$ 0,00" style="flex:1; min-width: 100px;">
-            <button onclick="salvarAlimentacao()" id="btn-fixar" class="btn-small bg-verde">FIXAR ALIMENTAÇÃO</button>
-            <button onclick="editarAlimentacao()" id="btn-editar-alim" class="btn-small bg-laranja" style="display:none">EDITAR</button>
+    <!-- Seção de Autenticação -->
+    <div id="auth-section">
+        <div class="user-info" id="user-display" style="display:none;">
+            <span>👤 <strong id="user-email"></strong></span>
+            <button onclick="logoutUser()" class="btn-small bg-vermelho">SAIR</button>
         </div>
-        <p>Saldo Atual: <strong id="display-saldo">R$ 0,00</strong></p>
+        
+        <!-- Formulário de Login -->
+        <div id="login-form" class="auth-form">
+            <h3 style="margin:0 0 10px 0; text-align:center;">🔐 Entrar</h3>
+            <input type="email" id="login-email" placeholder="E-mail" autocomplete="email">
+            <input type="password" id="login-pass" placeholder="Senha" autocomplete="current-password">
+            <div id="login-error" class="error-msg"></div>
+            <button onclick="loginUser()" class="btn-small bg-azul">ENTRAR</button>
+            <div class="auth-toggle">
+                Não tem conta? <a onclick="toggleAuthMode('register')">Cadastre-se</a>
+            </div>
+        </div>
+        
+        <!-- Formulário de Cadastro -->
+        <div id="register-form" class="auth-form" style="display:none;">
+            <h3 style="margin:0 0 10px 0; text-align:center;">📝 Criar Conta</h3>
+            <input type="email" id="reg-email" placeholder="E-mail" autocomplete="email">
+            <input type="password" id="reg-pass" placeholder="Senha (mín. 6 caracteres)" autocomplete="new-password">
+            <input type="password" id="reg-pass-confirm" placeholder="Confirmar senha" autocomplete="new-password">
+            <div id="reg-error" class="error-msg"></div>
+            <button onclick="registerUser()" class="btn-small bg-verde">CADASTRAR</button>            <div class="auth-toggle">
+                Já tem conta? <a onclick="toggleAuthMode('login')">Entrar</a>
+            </div>
+        </div>
+        
+        <div id="auth-loading" class="loading" style="display:none;">Carregando...</div>
     </div>
 
-    <div class="menu-topo">
-        <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
-        <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
-        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
-        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
-            <option value="01">JAN</option><option value="02">FEV</option>
-            <option value="03">MAR</option><option value="04">ABR</option>
-            <option value="05">MAI</option><option value="06">JUN</option>
-            <option value="07">JUL</option><option value="08">AGO</option>
-            <option value="09">SET</option><option value="10">OUT</option>
-            <option value="11">NOV</option><option value="12">DEZ</option>
-        </select>
-    </div>
+    <!-- App Principal (só aparece após login) -->
+    <div id="main-app" class="hidden">
+        <div class="card-info">
+            <label>Saldo Alimentação (Mês):</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                <input type="number" id="saldo-alim" placeholder="R$ 0,00" style="flex:1; min-width: 100px;">
+                <button onclick="salvarAlimentacao()" id="btn-fixar" class="btn-small bg-verde">FIXAR ALIMENTAÇÃO</button>
+                <button onclick="editarAlimentacao()" id="btn-editar-alim" class="btn-small bg-laranja" style="display:none">EDITAR</button>
+            </div>
+            <p>Saldo Atual: <strong id="display-saldo">R$ 0,00</strong></p>
+        </div>
 
-    <div id="tab-cad" class="form-group">
-        <input type="text" id="nome-compra" placeholder="Nome do item">
-        <input type="number" id="valor-unit" placeholder="Valor Unitário R$" oninput="calcTotal()">
-        <div class="input-row">
-            <input type="number" id="qtd-compra" placeholder="Qtd" oninput="calcTotal()" style="flex: 2;">
-            <select id="unidade-compra" style="flex: 1;">
-                <option value="UN">UN</option>
-                <option value="CX">CX</option>
-                <option value="KG">KG</option>
-                <option value="ML">ML</option>
-                <option value="PC">PC</option>
-                <option value="LT">LT</option>
+        <div class="menu-topo">
+            <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
+            <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
+            <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
+            <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
+                <option value="01">JAN</option><option value="02">FEV</option>
+                <option value="03">MAR</option><option value="04">ABR</option>
+                <option value="05">MAI</option><option value="06">JUN</option>
+                <option value="07">JUL</option><option value="08">AGO</option>
+                <option value="09">SET</option><option value="10">OUT</option>
+                <option value="11">NOV</option><option value="12">DEZ</option>
             </select>
         </div>
-        <p>Total: <strong id="total-preview">R$ 0,00</strong></p>
-        <button onclick="addCompra()" class="btn-small bg-azul">CADASTRAR COMPRA</button>
-    </div>
 
-    <div id="lista-compras"></div>
+        <div id="tab-cad" class="form-group">
+            <input type="text" id="nome-compra" placeholder="Nome do item">
+            <input type="number" id="valor-unit" placeholder="Valor Unitário R$" oninput="calcTotal()">
+            <div class="input-row">
+                <input type="number" id="qtd-compra" placeholder="Qtd" oninput="calcTotal()" style="flex: 2;">
+                <select id="unidade-compra" style="flex: 1;">
+                    <option value="UN">UN</option>
+                    <option value="CX">CX</option>
+                    <option value="KG">KG</option>
+                    <option value="ML">ML</option>
+                    <option value="PC">PC</option>
+                    <option value="LT">LT</option>
+                </select>
+            </div>
+            <p>Total: <strong id="total-preview">R$ 0,00</strong></p>
+            <button onclick="addCompra()" class="btn-small bg-azul">CADASTRAR COMPRA</button>        </div>
+
+        <div id="lista-compras"></div>
+    </div>
 </div>
 
-<script>
-    let compras = JSON.parse(localStorage.getItem('compras')) || [];
-    let saldosMensais = JSON.parse(localStorage.getItem('saldosMensais')) || {};
-    let editIdx = null;
+<!-- Firebase SDKs -->
+<script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword, 
+        signOut, 
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+        getFirestore, 
+        collection, 
+        doc, 
+        setDoc, 
+        getDoc, 
+        getDocs, 
+        query, 
+        where, 
+        orderBy, 
+        addDoc, 
+        updateDoc, 
+        deleteDoc, 
+        serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Funções da Calculadora
+    // Configuração do Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyAGe5RhKwdMt55jSe5hx2-6Nrp0BchxPuA",
+        authDomain: "lista-de-compras-b65b5.firebaseapp.com",
+        projectId: "lista-de-compras-b65b5",
+        storageBucket: "lista-de-compras-b65b5.firebasestorage.app",
+        messagingSenderId: "65465632851",
+        appId: "1:65465632851:web:109ddaadfcfe8a59271ea6"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Variáveis globais
+    let compras = [];    let saldosMensais = {};
+    let editIdx = null;
+    let currentUser = null;
+    let authMode = 'login'; // 'login' ou 'register'
+
+    // ============ FUNÇÕES DA CALCULADORA (mantidas) ============
     let calcExpressao = "";
-    function toggleCalc() {
+    window.toggleCalc = function() {
         const modal = document.getElementById('calc-modal');
         const overlay = document.getElementById('overlay');
         const isVisible = modal.style.display === 'block';
@@ -293,17 +454,17 @@
         overlay.style.display = isVisible ? 'none' : 'block';
     }
 
-    function addCalc(val) {
+    window.addCalc = function(val) {
         calcExpressao += val;
         document.getElementById('calc-display').innerText = calcExpressao;
     }
 
-    function clearCalc() {
+    window.clearCalc = function() {
         calcExpressao = "";
         document.getElementById('calc-display').innerText = "0";
     }
 
-    function execCalc() {
+    window.execCalc = function() {
         try {
             calcExpressao = eval(calcExpressao).toString();
             document.getElementById('calc-display').innerText = calcExpressao;
@@ -313,18 +474,246 @@
         }
     }
 
-    function init() {
-        checkLock();
-        renderList();
+    // ============ FUNÇÕES DE AUTENTICAÇÃO ============
+    
+    // Alternar entre login e cadastro
+    window.toggleAuthMode = function(mode) {
+        authMode = mode;
+        document.getElementById('login-form').style.display = mode === 'login' ? 'flex' : 'none';
+        document.getElementById('register-form').style.display = mode === 'register' ? 'flex' : 'none';
+        document.getElementById('login-error').classList.remove('show');
+        document.getElementById('reg-error').classList.remove('show');
     }
 
-    function checkLock() {
-        if (compras.length >= 4 && !localStorage.getItem('appUnlocked')) {
+    // Cadastro de novo usuário
+    window.registerUser = async function() {
+        const email = document.getElementById('reg-email').value.trim();
+        const pass = document.getElementById('reg-pass').value;        const passConfirm = document.getElementById('reg-pass-confirm').value;
+        const errorEl = document.getElementById('reg-error');
+        
+        errorEl.classList.remove('show');
+        
+        // Validações
+        if (!email || !pass || !passConfirm) {
+            errorEl.textContent = "Preencha todos os campos!";
+            errorEl.classList.add('show');
+            return;
+        }
+        if (pass.length < 6) {
+            errorEl.textContent = "Senha deve ter no mínimo 6 caracteres!";
+            errorEl.classList.add('show');
+            return;
+        }
+        if (pass !== passConfirm) {
+            errorEl.textContent = "As senhas não conferem!";
+            errorEl.classList.add('show');
+            return;
+        }
+        
+        try {
+            document.getElementById('auth-loading').style.display = 'block';
+            
+            // Criar usuário no Firebase Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+            
+            // Criar documento do usuário no Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                email: email,
+                createdAt: serverTimestamp(),
+                lastLogin: serverTimestamp()
+            });
+            
+            // Limpar formulário e atualizar UI
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-pass').value = '';
+            document.getElementById('reg-pass-confirm').value = '';
+            
+            await loadUserData(user.uid);
+            
+        } catch (error) {
+            console.error("Erro no cadastro:", error);
+            let msg = "Erro ao criar conta. Tente novamente.";
+            if (error.code === 'auth/email-already-in-use') {
+                msg = "Este e-mail já está cadastrado!";
+            } else if (error.code === 'auth/invalid-email') {
+                msg = "E-mail inválido!";            } else if (error.code === 'auth/weak-password') {
+                msg = "Senha muito fraca!";
+            }
+            errorEl.textContent = msg;
+            errorEl.classList.add('show');
+        } finally {
+            document.getElementById('auth-loading').style.display = 'none';
+        }
+    }
+
+    // Login de usuário existente
+    window.loginUser = async function() {
+        const email = document.getElementById('login-email').value.trim();
+        const pass = document.getElementById('login-pass').value;
+        const errorEl = document.getElementById('login-error');
+        
+        errorEl.classList.remove('show');
+        
+        if (!email || !pass) {
+            errorEl.textContent = "Preencha e-mail e senha!";
+            errorEl.classList.add('show');
+            return;
+        }
+        
+        try {
+            document.getElementById('auth-loading').style.display = 'block';
+            
+            const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+            
+            // Atualizar lastLogin
+            await updateDoc(doc(db, "users", user.uid), {
+                lastLogin: serverTimestamp()
+            });
+            
+            await loadUserData(user.uid);
+            
+        } catch (error) {
+            console.error("Erro no login:", error);
+            let msg = "E-mail ou senha incorretos!";
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                msg = "E-mail ou senha incorretos!";
+            } else if (error.code === 'auth/invalid-email') {
+                msg = "E-mail inválido!";
+            }
+            errorEl.textContent = msg;
+            errorEl.classList.add('show');
+        } finally {
+            document.getElementById('auth-loading').style.display = 'none';
+        }    }
+
+    // Logout
+    window.logoutUser = async function() {
+        try {
+            await signOut(auth);
+            // Resetar estado local
+            compras = [];
+            saldosMensais = {};
+            currentUser = null;
+            // Voltar para tela de login
+            document.getElementById('auth-section').classList.add('active');
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('user-display').style.display = 'none';
+            document.getElementById('login-form').style.display = 'flex';
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-pass').value = '';
+            authMode = 'login';
+        } catch (error) {
+            console.error("Erro ao sair:", error);
+            alert("Erro ao sair. Tente novamente.");
+        }
+    }
+
+    // Listener de estado de autenticação
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // Usuário logado
+            currentUser = user;
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-display').style.display = 'flex';
+            document.getElementById('auth-section').classList.add('active');
+            document.getElementById('main-app').classList.remove('hidden');
+            
+            await loadUserData(user.uid);
+        } else {
+            // Usuário deslogado
+            currentUser = null;
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('auth-section').classList.add('active');
+            document.getElementById('user-display').style.display = 'none';
+            // Manter na tela de autenticação
+        }
+    });
+
+    // Carregar dados do usuário do Firestore
+    async function loadUserData(userId) {
+        try {
+            // Carregar saldos            const saldosRef = collection(db, "saldos");
+            const saldosQuery = query(saldosRef, where("userId", "==", userId));
+            const saldosSnap = await getDocs(saldosQuery);
+            
+            saldosMensais = {};
+            saldosSnap.forEach(doc => {
+                const data = doc.data();
+                saldosMensais[data.mes] = data.valor;
+            });
+            
+            // Carregar compras
+            const comprasRef = collection(db, "compras");
+            const comprasQuery = query(
+                comprasRef, 
+                where("userId", "==", userId),
+                orderBy("createdAt", "desc")
+            );
+            const comprasSnap = await getDocs(comprasQuery);
+            
+            compras = [];
+            comprasSnap.forEach(docSnap => {
+                const data = docSnap.data();
+                compras.push({
+                    id: docSnap.id,
+                    ...data
+                });
+            });
+            
+            // Atualizar UI
+            renderList();
+            checkLock();
+            
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+            alert("Erro ao carregar seus dados. Verifique sua conexão.");
+        }
+    }
+
+    // Salvar dados no Firestore
+    async function saveDataToCloud() {
+        if (!currentUser) return;
+        
+        try {
+            // Salvar saldos (atualizar ou criar)
+            for (const [mes, valor] of Object.entries(saldosMensais)) {
+                const docRef = doc(db, "saldos", `${currentUser.uid}_${mes}`);
+                await setDoc(docRef, {
+                    userId: currentUser.uid,
+                    mes: mes,
+                    valor: valor,                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            }
+            
+            // Compras são salvas individualmente em addCompra, pagarCompra, etc.
+            
+        } catch (error) {
+            console.error("Erro ao sincronizar com nuvem:", error);
+            // Fallback: manter no localStorage
+            localStorage.setItem('compras', JSON.stringify(compras));
+            localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+        }
+    }
+
+    // ============ FUNÇÕES ORIGINAIS (adaptadas para Firebase) ============
+    
+    window.init = function() {
+        // Check lock só funciona localmente antes do login
+        checkLock();
+        // Dados serão carregados via Firebase após autenticação
+    }
+
+    window.checkLock = function() {
+        // Mantém a lógica original para modo offline/antes do login
+        if (compras.length >= 4 && !localStorage.getItem('appUnlocked') && !currentUser) {
             document.getElementById('block-screen').style.display = 'flex';
         }
     }
 
-    function unlockApp() {
+    window.unlockApp = function() {
         const pass = document.getElementById('admin-pass').value;
         if(pass === 'itv2026001') {
             localStorage.setItem('appUnlocked', 'true');
@@ -334,102 +723,192 @@
         }
     }
 
-    function calcTotal() {
+    window.calcTotal = function() {
         const v = parseFloat(document.getElementById('valor-unit').value) || 0;
         const q = parseFloat(document.getElementById('qtd-compra').value) || 0;
         document.getElementById('total-preview').innerText = `R$ ${(v * q).toFixed(2)}`;
     }
 
-    function addCompra() {
+    window.addCompra = async function() {
         const nome = document.getElementById('nome-compra').value;
         const valor = parseFloat(document.getElementById('valor-unit').value);
         const qtd = parseFloat(document.getElementById('qtd-compra').value);
-        const unidade = document.getElementById('unidade-compra').value;
-        const mes = document.getElementById('filtro-mes').value;
+        const unidade = document.getElementById('unidade-compra').value;        const mes = document.getElementById('filtro-mes').value;
 
         if(!nome || isNaN(valor) || isNaN(qtd)) return alert("Preencha os dados corretamente!");
 
         const novaCompra = {
-            nome, valor, qtd, unidade, total: valor * qtd, 
-            pago: false, mes: mes, id: Date.now()
+            nome, 
+            valor, 
+            qtd, 
+            unidade, 
+            total: parseFloat((valor * qtd).toFixed(2)), 
+            pago: false, 
+            mes: mes,
+            userId: currentUser?.uid || 'local',
+            createdAt: serverTimestamp?.() || new Date(),
+            updatedAt: serverTimestamp?.() || new Date()
         };
 
         if(editIdx !== null) {
-            compras[editIdx] = novaCompra;
+            // Atualizar compra existente
+            if (currentUser && compras[editIdx].id && !compras[editIdx].id.startsWith('local_')) {
+                // Atualizar no Firestore
+                try {
+                    await updateDoc(doc(db, "compras", compras[editIdx].id), {
+                        ...novaCompra,
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (e) {
+                    console.error("Erro ao atualizar:", e);
+                }
+            }
+            compras[editIdx] = { ...novaCompra, id: compras[editIdx].id };
             editIdx = null;
         } else {
-            compras.push(novaCompra);
+            if (currentUser) {
+                // Salvar no Firestore
+                try {
+                    const docRef = await addDoc(collection(db, "compras"), novaCompra);
+                    compras.push({ ...novaCompra, id: docRef.id });
+                } catch (e) {
+                    console.error("Erro ao salvar:", e);
+                    // Fallback local
+                    novaCompra.id = 'local_' + Date.now();
+                    compras.push(novaCompra);
+                }
+            } else {
+                // Modo local
+                novaCompra.id = 'local_' + Date.now();
+                compras.push(novaCompra);
+            }
         }
-
-        saveData();
+        // Salvar também localmente como cache
+        localStorage.setItem('compras', JSON.stringify(compras));
+        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+        
+        if (currentUser) {
+            await saveDataToCloud();
+        }
+        
         clearForm();
         renderList();
         checkLock();
     }
 
-    function pagarCompra(id) {
+    window.pagarCompra = async function(id) {
         const idx = compras.findIndex(c => c.id === id);
-        const mesAtual = compras[idx].mes;
+        if (idx === -1) return;
         
+        const item = compras[idx];
+        const mesAtual = item.mes;
+        
+        // Atualizar status para pago
         compras[idx].pago = true;
         
-        if(saldosMensais[mesAtual]) {
-            saldosMensais[mesAtual] -= compras[idx].total;
+        // Atualizar saldo do mês atual
+        if(saldosMensais[mesAtual] !== undefined) {
+            saldosMensais[mesAtual] = parseFloat((saldosMensais[mesAtual] - item.total).toFixed(2));
         }
         
+        // Calcular próximo mês
         let proxMesNum = parseInt(mesAtual) + 1;
         let proxMes = proxMesNum > 12 ? "01" : proxMesNum.toString().padStart(2, '0');
         
-        const recorrente = {...compras[idx], id: Date.now() + 1, pago: false, mes: proxMes};
-        compras.push(recorrente);
-
-        saveData();
+        // Criar item recorrente para o próximo mês
+        const recorrente = {
+            ...item, 
+            id: currentUser ? null : 'local_' + (Date.now() + 1),
+            pago: false, 
+            mes: proxMes,
+            createdAt: serverTimestamp?.() || new Date(),
+            updatedAt: serverTimestamp?.() || new Date()
+        };
+        delete recorrente.id; // Remover ID para criar novo documento
+        
+        if (currentUser) {
+            try {
+                // Atualizar item pago no Firestore
+                await updateDoc(doc(db, "compras", id), {
+                    pago: true,
+                    updatedAt: serverTimestamp()                });
+                
+                // Criar item recorrente
+                const newRef = await addDoc(collection(db, "compras"), {
+                    ...recorrente,
+                    userId: currentUser.uid
+                });
+                recorrente.id = newRef.id;
+                
+                // Atualizar saldo no Firestore
+                await saveDataToCloud();
+                
+            } catch (e) {
+                console.error("Erro ao pagar compra:", e);
+            }
+        }
+        
+        compras.push({ ...recorrente, id: recorrente.id || 'local_' + Date.now() });
+        
+        // Salvar localmente
+        localStorage.setItem('compras', JSON.stringify(compras));
+        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+        
         renderList();
     }
 
-    function deletarCompra(id) {
+    window.deletarCompra = async function(id) {
+        if (currentUser && !id.startsWith('local_')) {
+            try {
+                await deleteDoc(doc(db, "compras", id));
+            } catch (e) {
+                console.error("Erro ao deletar:", e);
+            }
+        }
         compras = compras.filter(c => c.id !== id);
-        saveData();
+        localStorage.setItem('compras', JSON.stringify(compras));
+        if (currentUser) await saveDataToCloud();
         renderList();
     }
 
-    function editCompra(id) {
+    window.editCompra = function(id) {
         const item = compras.find(c => c.id === id);
+        if (!item) return;
+        
         document.getElementById('nome-compra').value = item.nome;
         document.getElementById('valor-unit').value = item.valor;
         document.getElementById('qtd-compra').value = item.qtd;
         document.getElementById('unidade-compra').value = item.unidade || 'UN';
         editIdx = compras.findIndex(c => c.id === id);
-        calcTotal();
-        window.scrollTo(0,0);
+        calcTotal();        window.scrollTo(0,0);
     }
 
-    function salvarAlimentacao() {
+    window.salvarAlimentacao = async function() {
         const mes = document.getElementById('filtro-mes').value;
         const valor = parseFloat(document.getElementById('saldo-alim').value) || 0;
         
-        saldosMensais[mes] = valor;
+        saldosMensais[mes] = parseFloat(valor.toFixed(2));
         
         document.getElementById('saldo-alim').disabled = true;
         document.getElementById('btn-fixar').style.display = 'none';
         document.getElementById('btn-editar-alim').style.display = 'block';
         
-        saveData();
+        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+        
+        if (currentUser) {
+            await saveDataToCloud();
+        }
+        
         renderList();
     }
 
-    function editarAlimentacao() {
+    window.editarAlimentacao = function() {
         document.getElementById('saldo-alim').disabled = false;
         document.getElementById('btn-fixar').style.display = 'block';
         document.getElementById('btn-editar-alim').style.display = 'none';
     }
 
-    function saveData() {
-        localStorage.setItem('compras', JSON.stringify(compras));
-        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
-    }
-
-    function renderList(filtro = 'todos') {
+    window.renderList = function(filtro = 'todos') {
         const lista = document.getElementById('lista-compras');
         const mesAtual = document.getElementById('filtro-mes').value;
         lista.innerHTML = "";
@@ -450,8 +929,7 @@
         }
 
         compras.filter(c => c.mes === mesAtual).forEach(item => {
-            if(filtro === 'pago' && !item.pago) return;
-            if(filtro === 'n-pago' && item.pago) return;
+            if(filtro === 'pago' && !item.pago) return;            if(filtro === 'n-pago' && item.pago) return;
 
             const div = document.createElement('div');
             div.className = `item-compra ${item.pago ? 'pago' : 'pendente'}`;
@@ -460,22 +938,22 @@
                 Qtd: ${item.qtd} ${item.unidade || 'UN'} | Total: R$ ${item.total.toFixed(2)} <br>
                 Status: ${item.pago ? '<span style="color:green">PAGO</span>' : '<span style="color:red">NÃO PAGO</span>'}
                 <div style="margin-top:10px; display:flex; gap:5px">
-                    ${!item.pago ? `<button onclick="pagarCompra(${item.id})" class="btn-small bg-verde">PAGAR</button>` : ''}
-                    <button onclick="editCompra(${item.id})" class="btn-small bg-lilas">EDITAR</button>
-                    <button onclick="deletarCompra(${item.id})" class="btn-small bg-vermelho">EXCLUIR</button>
+                    ${!item.pago ? `<button onclick="pagarCompra('${item.id}')" class="btn-small bg-verde">PAGAR</button>` : ''}
+                    <button onclick="editCompra('${item.id}')" class="btn-small bg-lilas">EDITAR</button>
+                    <button onclick="deletarCompra('${item.id}')" class="btn-small bg-vermelho">EXCLUIR</button>
                 </div>
             `;
             lista.appendChild(div);
         });
     }
 
-    function showTab(type) {
+    window.showTab = function(type) {
         if(type === 'pago') renderList('pago');
         else if(type === 'n-pago') renderList('n-pago');
         else renderList('todos');
     }
 
-    function clearForm() {
+    window.clearForm = function() {
         document.getElementById('nome-compra').value = "";
         document.getElementById('valor-unit').value = "";
         document.getElementById('qtd-compra').value = "";
@@ -483,7 +961,33 @@
         document.getElementById('total-preview').innerText = "R$ 0,00";
     }
 
-    init();
+    // Inicializar app
+    window.addEventListener('DOMContentLoaded', () => {
+        // Carregar dados locais como fallback
+        if (!currentUser) {
+            compras = JSON.parse(localStorage.getItem('compras')) || [];
+            saldosMensais = JSON.parse(localStorage.getItem('saldosMensais')) || {};
+        }
+        init();
+    });
+
+    // Exportar funções para o escopo global (necessário para onclick no HTML)
+    window.calcTotal = calcTotal;
+    window.addCompra = addCompra;
+    window.pagarCompra = pagarCompra;
+    window.deletarCompra = deletarCompra;
+    window.editCompra = editCompra;
+    window.salvarAlimentacao = salvarAlimentacao;
+    window.editarAlimentacao = editarAlimentacao;    window.renderList = renderList;
+    window.showTab = showTab;
+    window.clearForm = clearForm;
+    window.checkLock = checkLock;
+    window.unlockApp = unlockApp;
+</script>
+
+<!-- Fallback para navegadores sem suporte a modules -->
+<script nomodule>
+    alert("Seu navegador não suporta módulos ES6. Por favor, atualize para uma versão mais recente.");
 </script>
 
 </body>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINHAS COMPRAS 1.0</title>
+    <style>
+        :root {
+            --azul: #2196F3;
+            --lilas: #9c27b0;
+            --vermelho: #f44336;
+            --verde: #4CAF50;
+            --laranja: #ff9800;
+            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: var(--bg-gradient);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container { padding: 15px; max-width: 500px; margin: auto; position: relative; }
+
+        h1 { text-align: center; font-size: 1.5rem; color: #00d2ff; margin-top: 40px; }
+
+        /* Botão Calculadora Superior Direito */
+        .btn-calc-topo {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--laranja);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Modal da Calculadora */
+        #calc-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #222;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 2000;
+            width: 260px;
+        }
+
+        #calc-display {
+            width: 100%;
+            height: 50px;
+            background: #000;
+            color: #0f0;
+            text-align: right;
+            padding: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-sizing: border-box;
+            border: 1px solid #444;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        .btn-calc {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #444;
+            color: white;
+        }
+
+        .btn-calc.op { background: var(--laranja); }
+        .btn-calc.igual { background: var(--verde); grid-column: span 2; }
+        .btn-calc.clear { background: var(--vermelho); grid-column: span 2; }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1999;
+        }
+
+        /* Menu Superior */
+        .menu-topo {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Cores dos Botões */
+        .bg-azul { background-color: var(--azul); }
+        .bg-verde { background-color: var(--verde); }
+        .bg-vermelho { background-color: var(--vermelho); }
+        .bg-lilas { background-color: var(--lilas); }
+        .bg-laranja { background-color: var(--laranja); }
+
+        /* Card de Alimentação */
+        .card-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Formulário */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        input, select {
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            background: #eee;
+            color: #333;
+        }
+
+        /* Lista de Compras */
+        .item-compra {
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .item-compra.pago { border-left: 8px solid var(--verde); }
+        .item-compra.pendente { border-left: 8px solid var(--vermelho); }
+
+        /* Bloqueio ADM */
+        #block-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a1a2e;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .btn-wpp {
+            background: #25d366;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 50px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="block-screen">
+    <h2>ACESSO BLOQUEADO</h2>
+    <p>Entre em contato com o ADM para liberar.</p>
+    <input type="password" id="admin-pass" placeholder="Digite a senha">
+    <button onclick="unlockApp()" class="btn-small bg-azul" style="flex:none; width: 200px; margin-top:10px">Liberar</button>
+    <a href="https://wa.me/5585996498573" class="btn-wpp">Chamar no WhatsApp</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleCalc()"></div>
+<div id="calc-modal">
+    <div id="calc-display">0</div>
+    <div class="calc-grid">
+        <button class="btn-calc clear" onclick="clearCalc()">C</button>
+        <button class="btn-calc op" onclick="addCalc('/')">/</button>
+        <button class="btn-calc op" onclick="addCalc('*')">x</button>
+        <button class="btn-calc" onclick="addCalc('7')">7</button>
+        <button class="btn-calc" onclick="addCalc('8')">8</button>
+        <button class="btn-calc" onclick="addCalc('9')">9</button>
+        <button class="btn-calc op" onclick="addCalc('-')">-</button>
+        <button class="btn-calc" onclick="addCalc('4')">4</button>
+        <button class="btn-calc" onclick="addCalc('5')">5</button>
+        <button class="btn-calc" onclick="addCalc('6')">6</button>
+        <button class="btn-calc op" onclick="addCalc('+')">+</button>
+        <button class="btn-calc" onclick="addCalc('1')">1</button>
+        <button class="btn-calc" onclick="addCalc('2')">2</button>
+        <button class="btn-calc" onclick="addCalc('3')">3</button>
+        <button class="btn-calc" onclick="addCalc('.')">.</button>
+        <button class="btn-calc" onclick="addCalc('0')">0</button>
+        <button class="btn-calc igual" onclick="execCalc()">=</button>
+    </div>
+</div>
+
+<div class="container">
+    <button class="btn-calc-topo" onclick="toggleCalc()">🖩 CALCULADORA</button>
+    <h1>MINHAS COMPRAS 1.0</h1>
+
+    <div class="card-info">
+        <label>Saldo Alimentação (Mês):</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+            <input type="number" id="saldo-alim" placeholder="R$ 0,00" style="flex:1; min-width: 100px;">
+            <button onclick="salvarAlimentacao()" id="btn-fixar" class="btn-small bg-verde">FIXAR ALIMENTAÇÃO</button>
+            <button onclick="editarAlimentacao()" id="btn-editar-alim" class="btn-small bg-laranja" style="display:none">EDITAR</button>
+        </div>
+        <p>Saldo Atual: <strong id="display-saldo">R$ 0,00</strong></p>
+    </div>
+
+    <div class="menu-topo">
+        <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
+        <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
+        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
+        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
+            <option value="01">JAN</option><option value="02">FEV</option>
+            <option value="03">MAR</option><option value="04">ABR</option>
+            <option value="05">MAI</option><option value="06">JUN</option>
+            <option value="07">JUL</option><option value="08">AGO</option>
+            <option value="09">SET</option><option value="10">OUT</option>
+            <option value="11">NOV</option><option value="12">DEZ</option>
+        </select>
+    </div>
+
+    <div id="tab-cad" class="form-group">
+        <input type="text" id="nome-compra" placeholder="Nome do item">
+        <input type="number" id="valor-unit" placeholder="Valor Unitário R$" oninput="calcTotal()">
+        <div class="input-row">
+            <input type="number" id="qtd-compra" placeholder="Qtd" oninput="calcTotal()" style="flex: 2;">
+            <select id="unidade-compra" style="flex: 1;">
+                <option value="UN">UN</option>
+                <option value="CX">CX</option>
+                <option value="KG">KG</option>
+                <option value="ML">ML</option>
+                <option value="PC">PC</option>
+                <option value="LT">LT</option>
+            </select>
+        </div>
+        <p>Total: <strong id="total-preview">R$ 0,00</strong></p>
+        <button onclick="addCompra()" class="btn-small bg-azul">CADASTRAR COMPRA</button>
+    </div>
+
+    <div id="lista-compras"></div>
+</div>
+
+<script>
+    let compras = JSON.parse(localStorage.getItem('compras')) || [];
+    let saldosMensais = JSON.parse(localStorage.getItem('saldosMensais')) || {};
+    let editIdx = null;
+
+    // Funções da Calculadora
+    let calcExpressao = "";
+    function toggleCalc() {
+        const modal = document.getElementById('calc-modal');
+        const overlay = document.getElementById('overlay');
+        const isVisible = modal.style.display === 'block';
+        modal.style.display = isVisible ? 'none' : 'block';
+        overlay.style.display = isVisible ? 'none' : 'block';
+    }
+
+    function addCalc(val) {
+        calcExpressao += val;
+        document.getElementById('calc-display').innerText = calcExpressao;
+    }
+
+    function clearCalc() {
+        calcExpressao = "";
+        document.getElementById('calc-display').innerText = "0";
+    }
+
+    function execCalc() {
+        try {
+            calcExpressao = eval(calcExpressao).toString();
+            document.getElementById('calc-display').innerText = calcExpressao;
+        } catch {
+            document.getElementById('calc-display').innerText = "Erro";
+            calcExpressao = "";
+        }
+    }
+
+    function init() {
+        checkLock();
+        renderList();
+    }
+
+    function checkLock() {
+        if (compras.length >= 4 && !localStorage.getItem('appUnlocked')) {
+            document.getElementById('block-screen').style.display = 'flex';
+        }
+    }
+
+    function unlockApp() {
+        const pass = document.getElementById('admin-pass').value;
+        if(pass === 'itv2026001') {
+            localStorage.setItem('appUnlocked', 'true');
+            document.getElementById('block-screen').style.display = 'none';
+        } else {
+            alert("Senha incorreta!");
+        }
+    }
+
+    function calcTotal() {
+        const v = parseFloat(document.getElementById('valor-unit').value) || 0;
+        const q = parseFloat(document.getElementById('qtd-compra').value) || 0;
+        document.getElementById('total-preview').innerText = `R$ ${(v * q).toFixed(2)}`;
+    }
+
+    function addCompra() {
+        const nome = document.getElementById('nome-compra').value;
+        const valor = parseFloat(document.getElementById('valor-unit').value);
+        const qtd = parseFloat(document.getElementById('qtd-compra').value);
+        const unidade = document.getElementById('unidade-compra').value;
+        const mes = document.getElementById('filtro-mes').value;
+
+        if(!nome || isNaN(valor) || isNaN(qtd)) return alert("Preencha os dados corretamente!");
+
+        const novaCompra = {
+            nome, valor, qtd, unidade, total: valor * qtd, 
+            pago: false, mes: mes, id: Date.now()
+        };
+
+        if(editIdx !== null) {
+            compras[editIdx] = novaCompra;
+            editIdx = null;
+        } else {
+            compras.push(novaCompra);
+        }
+
+        saveData();
+        clearForm();
+        renderList();
+        checkLock();
+    }
+
+    function pagarCompra(id) {
+        const idx = compras.findIndex(c => c.id === id);
+        const mesAtual = compras[idx].mes;
+        
+        compras[idx].pago = true;
+        
+        if(saldosMensais[mesAtual]) {
+            saldosMensais[mesAtual] -= compras[idx].total;
+        }
+        
+        let proxMesNum = parseInt(mesAtual) + 1;
+        let proxMes = proxMesNum > 12 ? "01" : proxMesNum.toString().padStart(2, '0');
+        
+        const recorrente = {...compras[idx], id: Date.now() + 1, pago: false, mes: proxMes};
+        compras.push(recorrente);
+
+        saveData();
+        renderList();
+    }
+
+    function deletarCompra(id) {
+        compras = compras.filter(c => c.id !== id);
+        saveData();
+        renderList();
+    }
+
+    function editCompra(id) {
+        const item = compras.find(c => c.id === id);
+        document.getElementById('nome-compra').value = item.nome;
+        document.getElementById('valor-unit').value = item.valor;
+        document.getElementById('qtd-compra').value = item.qtd;
+        document.getElementById('unidade-compra').value = item.unidade || 'UN';
+        editIdx = compras.findIndex(c => c.id === id);
+        calcTotal();
+        window.scrollTo(0,0);
+    }
+
+    function salvarAlimentacao() {
+        const mes = document.getElementById('filtro-mes').value;
+        const valor = parseFloat(document.getElementById('saldo-alim').value) || 0;
+        
+        saldosMensais[mes] = valor;
+        
+        document.getElementById('saldo-alim').disabled = true;
+        document.getElementById('btn-fixar').style.display = 'none';
+        document.getElementById('btn-editar-alim').style.display = 'block';
+        
+        saveData();
+        renderList();
+    }
+
+    function editarAlimentacao() {
+        document.getElementById('saldo-alim').disabled = false;
+        document.getElementById('btn-fixar').style.display = 'block';
+        document.getElementById('btn-editar-alim').style.display = 'none';
+    }
+
+    function saveData() {
+        localStorage.setItem('compras', JSON.stringify(compras));
+        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+    }
+
+    function renderList(filtro = 'todos') {
+        const lista = document.getElementById('lista-compras');
+        const mesAtual = document.getElementById('filtro-mes').value;
+        lista.innerHTML = "";
+
+        const saldoDoMes = saldosMensais[mesAtual] || 0;
+        document.getElementById('display-saldo').innerText = `R$ ${parseFloat(saldoDoMes).toFixed(2)}`;
+        
+        if(saldosMensais[mesAtual] !== undefined) {
+            document.getElementById('saldo-alim').value = saldosMensais[mesAtual].toFixed(2);
+            document.getElementById('saldo-alim').disabled = true;
+            document.getElementById('btn-fixar').style.display = 'none';
+            document.getElementById('btn-editar-alim').style.display = 'block';
+        } else {
+            document.getElementById('saldo-alim').value = "";
+            document.getElementById('saldo-alim').disabled = false;
+            document.getElementById('btn-fixar').style.display = 'block';
+            document.getElementById('btn-editar-alim').style.display = 'none';
+        }
+
+        compras.filter(c => c.mes === mesAtual).forEach(item => {
+            if(filtro === 'pago' && !item.pago) return;
+            if(filtro === 'n-pago' && item.pago) return;
+
+            const div = document.createElement('div');
+            div.className = `item-compra ${item.pago ? 'pago' : 'pendente'}`;
+            div.innerHTML = `
+                <strong>${item.nome}</strong><br>
+                Qtd: ${item.qtd} ${item.unidade || 'UN'} | Total: R$ ${item.total.toFixed(2)} <br>
+                Status: ${item.pago ? '<span style="color:green">PAGO</span>' : '<span style="color:red">NÃO PAGO</span>'}
+                <div style="margin-top:10px; display:flex; gap:5px">
+                    ${!item.pago ? `<button onclick="pagarCompra(${item.id})" class="btn-small bg-verde">PAGAR</button>` : ''}
+                    <button onclick="editCompra(${item.id})" class="btn-small bg-lilas">EDITAR</button>
+                    <button onclick="deletarCompra(${item.id})" class="btn-small bg-vermelho">EXCLUIR</button>
+                </div>
+            `;
+            lista.appendChild(div);
+        });
+    }
+
+    function showTab(type) {
+        if(type === 'pago') renderList('pago');
+        else if(type === 'n-pago') renderList('n-pago');
+        else renderList('todos');
+    }
+
+    function clearForm() {
+        document.getElementById('nome-compra').value = "";
+        document.getElementById('valor-unit').value = "";
+        document.getElementById('qtd-compra').value = "";
+        document.getElementById('unidade-compra').value = "UN";
+        document.getElementById('total-preview').innerText = "R$ 0,00";
+    }
+
+    init();
+</script>
+
+</body>
+</html>

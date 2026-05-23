@@ -96,8 +96,7 @@
             background: rgba(0,0,0,0.7);
             z-index: 1999;
         }
-        /* Menu Superior */
-        .menu-topo {
+        /* Menu Superior */        .menu-topo {
             display: flex;
             justify-content: space-between;
             gap: 5px;
@@ -145,8 +144,8 @@
 
         .input-row {
             display: flex;
-            gap: 5px;        }
-
+            gap: 5px;
+        }
         input, select {
             padding: 12px;
             border-radius: 5px;
@@ -194,8 +193,8 @@
         /* Indicador de sincronização */
         .sync-status {
             position: fixed;
-            bottom: 10px;            right: 10px;
-            padding: 5px 10px;
+            bottom: 10px;
+            right: 10px;            padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.7rem;
             z-index: 100;
@@ -203,10 +202,172 @@
         .sync-ok { background: var(--verde); }
         .sync-error { background: var(--vermelho); }
         .sync-pending { background: var(--laranja); }
+
+        /* === NOVO: ESTILOS DO LOGIN === */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-gradient);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .login-card h2 {
+            text-align: center;
+            color: #00d2ff;
+            margin: 0 0 20px 0;
+            font-size: 1.4rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 1rem;            box-sizing: border-box;
+        }
+
+        .login-input::placeholder { color: #666; }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            margin: 15px 0 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: var(--azul);
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover { background: #1976d2; }
+
+        .login-toggle {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .login-toggle a {
+            color: #00d2ff;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .login-toggle a:hover { text-decoration: underline; }
+
+        .login-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #ffcdd2;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+
+        .user-info {
+            position: absolute;            top: 10px;
+            left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            z-index: 10;
+        }
+
+        .btn-logout {
+            background: var(--vermelho);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+<!-- === NOVO: TELA DE LOGIN === -->
+<div id="login-screen">
+    <div class="login-card">
+        <h2>🔐 MINHAS COMPRAS 1.0</h2>
+        
+        <div id="login-error" class="login-error"></div>
+        
+        <!-- Formulário de Login -->
+        <div id="form-login">            <input type="email" id="login-email" class="login-input" placeholder="📧 Seu e-mail" required>
+            <input type="password" id="login-senha" class="login-input" placeholder="🔒 Sua senha" required>
+            <button onclick="fazerLogin()" class="login-btn" id="btn-login">
+                ENTRAR
+            </button>
+            <div class="login-toggle">
+                Não tem conta? <a onclick="alternarCadastro()">Criar conta</a>
+            </div>
+        </div>
+        
+        <!-- Formulário de Cadastro -->
+        <div id="form-cadastro" class="hidden">
+            <input type="text" id="cad-nome" class="login-input" placeholder="👤 Seu nome" required>
+            <input type="email" id="cad-email" class="login-input" placeholder="📧 Seu e-mail" required>
+            <input type="password" id="cad-senha" class="login-input" placeholder="🔒 Crie uma senha (mín. 6 caracteres)" required minlength="6">
+            <input type="password" id="cad-confirmar" class="login-input" placeholder="🔐 Confirmar senha" required>
+            <button onclick="criarConta()" class="login-btn bg-verde" id="btn-cadastro">
+                CRIAR CONTA
+            </button>
+            <div class="login-toggle">
+                Já tem conta? <a onclick="alternarCadastro()">Fazer login</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bloqueio ADM (mantido original) -->
 <div id="block-screen">
     <h2>ACESSO BLOQUEADO</h2>
     <p>Entre em contato com o ADM para liberar.</p>
@@ -229,8 +390,7 @@
         <button class="btn-calc" onclick="addCalc('4')">4</button>
         <button class="btn-calc" onclick="addCalc('5')">5</button>
         <button class="btn-calc" onclick="addCalc('6')">6</button>
-        <button class="btn-calc op" onclick="addCalc('+')">+</button>
-        <button class="btn-calc" onclick="addCalc('1')">1</button>
+        <button class="btn-calc op" onclick="addCalc('+')">+</button>        <button class="btn-calc" onclick="addCalc('1')">1</button>
         <button class="btn-calc" onclick="addCalc('2')">2</button>
         <button class="btn-calc" onclick="addCalc('3')">3</button>
         <button class="btn-calc" onclick="addCalc('.')">.</button>
@@ -239,11 +399,18 @@
     </div>
 </div>
 
-<div class="container">
+<div class="container" id="app-content" style="display: none;">
+    <!-- Info do usuário logado -->
+    <div class="user-info">
+        <span id="user-display">👤 Usuário</span>
+        <button onclick="fazerLogout()" class="btn-logout">SAIR</button>
+    </div>
+    
     <button class="btn-calc-topo" onclick="toggleCalc()">🖩 CALCULADORA</button>
     <h1>MINHAS COMPRAS 1.0</h1>
 
-    <div class="card-info">        <label>Saldo Alimentação (Mês):</label>
+    <div class="card-info">
+        <label>Saldo Alimentação (Mês):</label>
         <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
             <input type="number" id="saldo-alim" placeholder="R$ 0,00" style="flex:1; min-width: 100px;">
             <button onclick="salvarAlimentacao()" id="btn-fixar" class="btn-small bg-verde">FIXAR ALIMENTAÇÃO</button>
@@ -272,8 +439,7 @@
         <div class="input-row">
             <input type="number" id="qtd-compra" placeholder="Qtd" oninput="calcTotal()" style="flex: 2;">
             <select id="unidade-compra" style="flex: 1;">
-                <option value="UN">UN</option>
-                <option value="CX">CX</option>
+                <option value="UN">UN</option>                <option value="CX">CX</option>
                 <option value="KG">KG</option>
                 <option value="ML">ML</option>
                 <option value="PC">PC</option>
@@ -290,9 +456,10 @@
     <div id="sync-indicator" class="sync-status sync-pending">Sincronizando...</div>
 </div>
 
-<!-- Firebase SDK via CDN (Compatível com navegador) -->
+<!-- Firebase SDK via CDN -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";    import { 
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
         getFirestore, 
         doc, 
         setDoc, 
@@ -303,6 +470,14 @@
         onSnapshot,
         enableIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // === NOVO: Importar Authentication ===
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword, 
+        signOut, 
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // Configuração do Firebase
     const firebaseConfig = {
@@ -313,12 +488,13 @@
         messagingSenderId: "701417243300",
         appId: "1:701417243300:web:ac56526f1096c64aa3dc31"
     };
-
     // Inicializa Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    // === NOVO: Inicializar Auth ===
+    const auth = getAuth(app);
 
-    // Habilita persistência offline (opcional, mas recomendado)
+    // Habilita persistência offline
     enableIndexedDbPersistence(db).catch((err) => {
         if (err.code === 'failed-precondition') {
             console.log('Múltiplas abas abertas - persistência offline desativada');
@@ -330,77 +506,247 @@
     // Referências do documento no Firestore
     const comprasRef = doc(db, "apps", "minhas-compras-1-0");
     
-    // Variáveis globais (mantidas para compatibilidade)
+    // Variáveis globais
     window.compras = [];
     window.saldosMensais = {};
     window.editIdx = null;
-    window.db = db; // Exporta db para uso global se necessário
+    window.db = db;
+    // === NOVO: Exportar auth ===
+    window.auth = auth;
 
-    // === FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE ===
+    // === NOVO: FUNÇÕES DE AUTENTICAÇÃO ===
     
-    // Carrega dados do Firestore e escuta mudanças em tempo real
+    // Verificar estado de autenticação
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Usuário logado
+            window.usuarioAtual = user;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-content').style.display = 'block';
+            document.getElementById('user-display').textContent = `👤 ${user.email}`;
+            
+            // Iniciar sincronização com Firebase
+            if (typeof window.syncFromFirebase === 'function') {
+                window.syncFromFirebase();
+            }
+            if (typeof window.init === 'function') {
+                window.init();
+            }
+        } else {
+            // Usuário não logado
+            window.usuarioAtual = null;
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app-content').style.display = 'none';
+            document.getElementById('form-cadastro').classList.add('hidden');            document.getElementById('form-login').classList.remove('hidden');
+        }
+    });
+
+    // Função para criar conta
+    window.criarConta = async function() {
+        const nome = document.getElementById('cad-nome').value.trim();
+        const email = document.getElementById('cad-email').value.trim();
+        const senha = document.getElementById('cad-senha').value;
+        const confirmar = document.getElementById('cad-confirmar').value;
+        const errorDiv = document.getElementById('login-error');
+        const btn = document.getElementById('btn-cadastro');
+
+        // Validações
+        if (!nome || !email || !senha || !confirmar) {
+            errorDiv.textContent = '⚠ Preencha todos os campos!';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (senha.length < 6) {
+            errorDiv.textContent = '⚠ A senha deve ter pelo menos 6 caracteres!';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (senha !== confirmar) {
+            errorDiv.textContent = '⚠ As senhas não conferem!';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Loading
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="loading"></span> Criando...';
+        btn.disabled = true;
+        errorDiv.style.display = 'none';
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+            // Salvar nome do usuário no perfil
+            await updateDoc(doc(db, "users", userCredential.user.uid), {
+                nome: nome,
+                email: email,
+                createdAt: new Date()
+            }, { merge: true });
+            
+            // Limpar formulário
+            document.getElementById('cad-nome').value = '';
+            document.getElementById('cad-email').value = '';
+            document.getElementById('cad-senha').value = '';
+            document.getElementById('cad-confirmar').value = '';            
+        } catch (error) {
+            console.error("Erro ao criar conta:", error);
+            let mensagem = '⚠ Erro ao criar conta. ';
+            if (error.code === 'auth/email-already-in-use') mensagem += 'E-mail já cadastrado!';
+            else if (error.code === 'auth/invalid-email') mensagem += 'E-mail inválido!';
+            else if (error.code === 'auth/weak-password') mensagem += 'Senha muito fraca!';
+            else mensagem += 'Tente novamente.';
+            errorDiv.textContent = mensagem;
+            errorDiv.style.display = 'block';
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+
+    // Função para fazer login
+    window.fazerLogin = async function() {
+        const email = document.getElementById('login-email').value.trim();
+        const senha = document.getElementById('login-senha').value;
+        const errorDiv = document.getElementById('login-error');
+        const btn = document.getElementById('btn-login');
+
+        if (!email || !senha) {
+            errorDiv.textContent = '⚠ Preencha e-mail e senha!';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Loading
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="loading"></span> Entrando...';
+        btn.disabled = true;
+        errorDiv.style.display = 'none';
+
+        try {
+            await signInWithEmailAndPassword(auth, email, senha);
+            // Login bem-sucedido - onAuthStateChanged cuidará do resto
+        } catch (error) {
+            console.error("Erro ao fazer login:", error);
+            let mensagem = '⚠ Erro ao entrar. ';
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                mensagem += 'E-mail ou senha incorretos!';
+            } else if (error.code === 'auth/invalid-email') {
+                mensagem += 'E-mail inválido!';
+            } else {
+                mensagem += 'Tente novamente.';
+            }
+            errorDiv.textContent = mensagem;
+            errorDiv.style.display = 'block';        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+
+    // Função para fazer logout
+    window.fazerLogout = async function() {
+        if (confirm('Deseja realmente sair da conta?')) {
+            try {
+                await signOut(auth);
+                // Limpar dados locais ao sair
+                window.compras = [];
+                window.saldosMensais = {};
+            } catch (error) {
+                console.error("Erro ao fazer logout:", error);
+                alert('Erro ao sair. Tente novamente.');
+            }
+        }
+    };
+
+    // Alternar entre login e cadastro
+    window.alternarCadastro = function() {
+        const formLogin = document.getElementById('form-login');
+        const formCadastro = document.getElementById('form-cadastro');
+        const errorDiv = document.getElementById('login-error');
+        
+        formLogin.classList.toggle('hidden');
+        formCadastro.classList.toggle('hidden');
+        errorDiv.style.display = 'none';
+        
+        // Limpar campos ao alternar
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-senha').value = '';
+        document.getElementById('cad-nome').value = '';
+        document.getElementById('cad-email').value = '';
+        document.getElementById('cad-senha').value = '';
+        document.getElementById('cad-confirmar').value = '';
+    };
+
+    // === FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE (mantidas) ===
+    
     function syncFromFirebase() {
-        onSnapshot(comprasRef, (docSnap) => {
-            if (docSnap.exists()) {                const data = docSnap.data();
+        // Só sincroniza se usuário estiver autenticado
+        if (!auth.currentUser) return;
+        
+        // Usar UID do usuário para documento único por usuário
+        const userComprasRef = doc(db, "users", auth.currentUser.uid, "compras", "lista");
+        
+        onSnapshot(userComprasRef, (docSnap) => {            if (docSnap.exists()) {
+                const data = docSnap.data();
                 window.compras = data.compras || [];
                 window.saldosMensais = data.saldosMensais || {};
                 
-                // Atualiza UI se a função existir
                 if (typeof window.renderList === 'function') {
                     window.renderList();
                 }
                 updateSyncStatus('ok');
             } else {
-                // Documento não existe, cria com dados vazios
+                // Criar documento vazio para o usuário
                 saveToFirebase();
             }
         }, (error) => {
             console.error("Erro ao sincronizar:", error);
             updateSyncStatus('error');
-            // Fallback: tenta carregar do localStorage se disponível
             loadFromLocalStorage();
         });
     }
 
-    // Salva dados no Firestore
     async function saveToFirebase() {
+        if (!auth.currentUser) return;
+        
         try {
             updateSyncStatus('pending');
-            await setDoc(comprasRef, {
+            const userComprasRef = doc(db, "users", auth.currentUser.uid, "compras", "lista");
+            
+            await setDoc(userComprasRef, {
                 compras: window.compras,
                 saldosMensais: window.saldosMensais,
                 updatedAt: new Date()
             }, { merge: true });
             updateSyncStatus('ok');
-            
-            // Backup local como fallback
             saveToLocalStorage();
         } catch (error) {
             console.error("Erro ao salvar no Firebase:", error);
             updateSyncStatus('error');
-            // Mantém salvamento local como fallback
             saveToLocalStorage();
         }
     }
 
-    // === FALLBACK PARA LOCALSTORAGE (OFFLINE/EMERGÊNCIA) ===
+    // === FALLBACK PARA LOCALSTORAGE ===
     
     function saveToLocalStorage() {
         try {
-            localStorage.setItem('compras', JSON.stringify(window.compras));
-            localStorage.setItem('saldosMensais', JSON.stringify(window.saldosMensais));
-        } catch(e) {
-            console.warn("Não foi possível salvar no localStorage");        }
+            if (auth.currentUser) {
+                localStorage.setItem('compras_' + auth.currentUser.uid, JSON.stringify(window.compras));
+                localStorage.setItem('saldosMensais_' + auth.currentUser.uid, JSON.stringify(window.saldosMensais));
+            }
+        } catch(e) {            console.warn("Não foi possível salvar no localStorage");
+        }
     }
 
     function loadFromLocalStorage() {
         try {
-            const comprasLocal = localStorage.getItem('compras');
-            const saldosLocal = localStorage.getItem('saldosMensais');
-            if (comprasLocal) window.compras = JSON.parse(comprasLocal);
-            if (saldosLocal) window.saldosMensais = JSON.parse(saldosLocal);
-            if (typeof window.renderList === 'function') {
-                window.renderList();
+            if (auth.currentUser) {
+                const comprasLocal = localStorage.getItem('compras_' + auth.currentUser.uid);
+                const saldosLocal = localStorage.getItem('saldosMensais_' + auth.currentUser.uid);
+                if (comprasLocal) window.compras = JSON.parse(comprasLocal);
+                if (saldosLocal) window.saldosMensais = JSON.parse(saldosLocal);
+                if (typeof window.renderList === 'function') {
+                    window.renderList();
+                }
             }
         } catch(e) {
             console.warn("Não foi possível carregar do localStorage");
@@ -421,7 +767,6 @@
         };
         indicator.textContent = messages[status] || status;
         
-        // Esconde após 3 segundos se estiver OK
         if (status === 'ok') {
             setTimeout(() => {
                 if (indicator.classList.contains('sync-ok')) {
@@ -431,21 +776,17 @@
         }
     }
 
-    // Exporta funções para escopo global (para os onclick do HTML)
+    // Exporta funções para escopo global
     window.syncFromFirebase = syncFromFirebase;
     window.saveToFirebase = saveToFirebase;
     window.updateSyncStatus = updateSyncStatus;
-
-    // Inicializa sincronização quando o módulo carregar
-    syncFromFirebase();
 </script>
-<script>
-    // === CÓDIGO ORIGINAL (INALTERADO) COM ADAPTAÇÕES MÍNIMAS ===
+
+<script>    // === CÓDIGO ORIGINAL (INALTERADO) COM ADAPTAÇÕES MÍNIMAS ===
     
-    // Usa variáveis globais definidas no módulo Firebase
     let editIdx = null;
 
-    // Funções da Calculadora (inalteradas)
+    // Funções da Calculadora
     let calcExpressao = "";
     function toggleCalc() {
         const modal = document.getElementById('calc-modal');
@@ -477,7 +818,6 @@
 
     function init() {
         checkLock();
-        // renderList será chamado pelo listener do Firebase
         if (window.compras && window.compras.length > 0) {
             renderList();
         }
@@ -488,10 +828,10 @@
             document.getElementById('block-screen').style.display = 'flex';
         }
     }
+    
     function unlockApp() {
         const pass = document.getElementById('admin-pass').value;
-        if(pass === 'itv2026001') {
-            localStorage.setItem('appUnlocked', 'true');
+        if(pass === 'itv2026001') {            localStorage.setItem('appUnlocked', 'true');
             document.getElementById('block-screen').style.display = 'none';
         } else {
             alert("Senha incorreta!");
@@ -505,6 +845,12 @@
     }
 
     function addCompra() {
+        // === NOVO: Verificar se usuário está logado ===
+        if (!window.auth || !window.auth.currentUser) {
+            alert('Você precisa estar logado para cadastrar compras!');
+            return;
+        }
+        
         const nome = document.getElementById('nome-compra').value;
         const valor = parseFloat(document.getElementById('valor-unit').value);
         const qtd = parseFloat(document.getElementById('qtd-compra').value);
@@ -532,6 +878,10 @@
     }
 
     function pagarCompra(id) {
+        if (!window.auth || !window.auth.currentUser) {
+            alert('Você precisa estar logado para realizar esta ação!');
+            return;        }
+        
         const idx = window.compras.findIndex(c => c.id === id);
         if (idx === -1) return;
         
@@ -553,12 +903,22 @@
     }
 
     function deletarCompra(id) {
+        if (!window.auth || !window.auth.currentUser) {
+            alert('Você precisa estar logado para realizar esta ação!');
+            return;
+        }
+        
         window.compras = window.compras.filter(c => c.id !== id);
         saveData();
         renderList();
     }
 
     function editCompra(id) {
+        if (!window.auth || !window.auth.currentUser) {
+            alert('Você precisa estar logado para realizar esta ação!');
+            return;
+        }
+        
         const item = window.compras.find(c => c.id === id);
         if (!item) return;
         
@@ -570,8 +930,12 @@
         calcTotal();
         window.scrollTo(0,0);
     }
-
     function salvarAlimentacao() {
+        if (!window.auth || !window.auth.currentUser) {
+            alert('Você precisa estar logado para realizar esta ação!');
+            return;
+        }
+        
         const mes = document.getElementById('filtro-mes').value;
         const valor = parseFloat(document.getElementById('saldo-alim').value) || 0;
         
@@ -586,16 +950,15 @@
     }
 
     function editarAlimentacao() {
-        document.getElementById('saldo-alim').disabled = false;        document.getElementById('btn-fixar').style.display = 'block';
+        document.getElementById('saldo-alim').disabled = false;
+        document.getElementById('btn-fixar').style.display = 'block';
         document.getElementById('btn-editar-alim').style.display = 'none';
     }
 
     function saveData() {
-        // Salva no Firebase (que também faz backup local)
         if (window.saveToFirebase) {
             window.saveToFirebase();
         } else {
-            // Fallback direto para localStorage
             localStorage.setItem('compras', JSON.stringify(window.compras));
             localStorage.setItem('saldosMensais', JSON.stringify(window.saldosMensais));
         }
@@ -615,8 +978,7 @@
             document.getElementById('btn-fixar').style.display = 'none';
             document.getElementById('btn-editar-alim').style.display = 'block';
         } else {
-            document.getElementById('saldo-alim').value = "";
-            document.getElementById('saldo-alim').disabled = false;
+            document.getElementById('saldo-alim').value = "";            document.getElementById('saldo-alim').disabled = false;
             document.getElementById('btn-fixar').style.display = 'block';
             document.getElementById('btn-editar-alim').style.display = 'none';
         }
@@ -635,7 +997,8 @@
                     ${!item.pago ? `<button onclick="pagarCompra(${item.id})" class="btn-small bg-verde">PAGAR</button>` : ''}
                     <button onclick="editCompra(${item.id})" class="btn-small bg-lilas">EDITAR</button>
                     <button onclick="deletarCompra(${item.id})" class="btn-small bg-vermelho">EXCLUIR</button>
-                </div>            `;
+                </div>
+            `;
             lista.appendChild(div);
         });
     }
@@ -655,7 +1018,7 @@
     }
 
     // Inicializa app
-    init();
+    // init() agora é chamado após login bem-sucedido via onAuthStateChanged
 </script>
 
 </body>

@@ -47,7 +47,8 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);            background: #222;
+            transform: translate(-50%, -50%);
+            background: #222;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -96,7 +97,9 @@
             background: rgba(0,0,0,0.7);
             z-index: 1999;
         }
-        /* Menu Superior */        .menu-topo {
+
+        /* Menu Superior */
+        .menu-topo {
             display: flex;
             justify-content: space-between;
             gap: 5px;
@@ -146,6 +149,7 @@
             display: flex;
             gap: 5px;
         }
+
         input, select {
             padding: 12px;
             border-radius: 5px;
@@ -189,159 +193,12 @@
             margin-top: 20px;
             display: inline-block;
         }
-
-        /* 🔐 NOVO: Estilos da Tela de Autenticação */
-        #auth-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-gradient);            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .auth-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 400px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-
-        .auth-card h2 {
-            text-align: center;
-            color: #00d2ff;
-            margin-bottom: 20px;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .auth-form input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .auth-form input::placeholder {
-            color: #666;
-        }
-
-        .auth-btn {
-            padding: 14px;
-            border: none;            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: transform 0.1s;
-        }
-
-        .auth-btn:active { transform: scale(0.98); }
-
-        .auth-toggle {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-
-        .auth-toggle a {
-            color: #00d2ff;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .auth-toggle a:hover { text-decoration: underline; }
-
-        .auth-error {
-            background: rgba(244, 67, 54, 0.2);
-            color: #ffcdd2;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .auth-success {
-            background: rgba(76, 175, 80, 0.2);
-            color: #c8e6c9;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        /* Botão de Logout */
-        #btn-logout {
-            position: absolute;
-            top: 10px;
-            left: 15px;            background: var(--vermelho);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 10;
-            font-size: 0.8rem;
-            display: none;
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 10px;
-            color: #00d2ff;
-            font-size: 0.9rem;
-            display: none;
-        }
     </style>
 </head>
 <body>
 
-<!-- 🔐 TELA DE AUTENTICAÇÃO (NOVA) -->
-<div id="auth-screen">
-    <div class="auth-card">
-        <h2 id="auth-title">ENTRAR</h2>
-        
-        <div id="auth-error" class="auth-error"></div>
-        <div id="auth-success" class="auth-success"></div>
-        
-        <form id="auth-form" class="auth-form">
-            <input type="email" id="auth-email" placeholder="Seu e-mail" required>
-            <input type="password" id="auth-password" placeholder="Sua senha (mín. 6 caracteres)" required minlength="6">
-            <input type="text" id="auth-name" placeholder="Seu nome (apenas no cadastro)" style="display: none;">
-            
-            <button type="submit" id="auth-submit" class="auth-btn bg-azul">ENTRAR</button>
-        </form>
-        
-        <div class="auth-toggle">
-            <span id="auth-toggle-text">Não tem conta?</span>
-            <a id="auth-toggle-link" onclick="toggleAuthMode()">Criar conta</a>
-        </div>
-        
-        <div class="loading" id="auth-loading">Carregando...</div>
-    </div>
-</div>
-<!-- Bloqueio ADM (mantido) -->
-<div id="block-screen">    <h2>ACESSO BLOQUEADO</h2>
+<div id="block-screen">
+    <h2>ACESSO BLOQUEADO</h2>
     <p>Entre em contato com o ADM para liberar.</p>
     <input type="password" id="admin-pass" placeholder="Digite a senha">
     <button onclick="unlockApp()" class="btn-small bg-azul" style="flex:none; width: 200px; margin-top:10px">Liberar</button>
@@ -373,9 +230,6 @@
 </div>
 
 <div class="container">
-    <!-- 🔐 Botão de Logout (NOVO) -->
-    <button id="btn-logout" class="btn-small bg-vermelho" onclick="logoutUser()">🔓 SAIR</button>
-    
     <button class="btn-calc-topo" onclick="toggleCalc()">🖩 CALCULADORA</button>
     <h1>MINHAS COMPRAS 1.0</h1>
 
@@ -388,9 +242,11 @@
         </div>
         <p>Saldo Atual: <strong id="display-saldo">R$ 0,00</strong></p>
     </div>
+
     <div class="menu-topo">
         <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
-        <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
+        <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
+        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
         <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
             <option value="01">JAN</option><option value="02">FEV</option>
             <option value="03">MAR</option><option value="04">ABR</option>
@@ -422,353 +278,11 @@
     <div id="lista-compras"></div>
 </div>
 
-<!-- Firebase SDKs via CDN (Compat mode) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
 <script>
-    // ============================================
-    // CONFIGURAÇÃO DO FIREBASE
-    // ⚠️ Em produção, use variáveis de ambiente ou Firebase Config
-    // ============================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyBWUQvPdMiCseatHN_Nh1B7_EjGUSyFlaE",
-        authDomain: "lista-de-compras-533d3.firebaseapp.com",
-        projectId: "lista-de-compras-533d3",
-        storageBucket: "lista-de-compras-533d3.firebasestorage.app",
-        messagingSenderId: "710244303874",
-        appId: "1:710244303874:web:b5c99fa57bb8ba88ad131b"
-    };
-    // Inicializa Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth(); // 🔐 Autenticação
-    
-    // Referência das coleções no Firestore (por usuário)
-    const comprasRef = db.collection('compras');
-    const saldosRef = db.collection('saldos');
-    const configRef = db.collection('config');
-
-    // ============================================
-    // VARIÁVEIS GLOBAIS
-    // ============================================
     let compras = JSON.parse(localStorage.getItem('compras')) || [];
     let saldosMensais = JSON.parse(localStorage.getItem('saldosMensais')) || {};
     let editIdx = null;
-    let appUnlocked = localStorage.getItem('appUnlocked') === 'true';
-    
-    // 🔐 Variáveis de Autenticação
-    let currentUser = null;
-    let isLoginMode = true;
 
-    // ============================================
-    // 🔐 FUNÇÕES DE AUTENTICAÇÃO (NOVAS)
-    // ============================================
-    
-    // Alternar entre Login e Cadastro
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? 'ENTRAR' : 'CRIAR CONTA';
-        document.getElementById('auth-submit').innerText = isLoginMode ? 'ENTRAR' : 'CADASTRAR';
-        document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'Não tem conta?' : 'Já tem conta?';
-        document.getElementById('auth-toggle-link').innerText = isLoginMode ? 'Criar conta' : 'Fazer login';
-        document.getElementById('auth-name').style.display = isLoginMode ? 'none' : 'block';
-        document.getElementById('auth-password').placeholder = isLoginMode ? 'Sua senha' : 'Senha (mín. 6 caracteres)';
-        hideAuthMessages();
-    }
-
-    // Mostrar mensagens de autenticação
-    function showAuthError(msg) {
-        const el = document.getElementById('auth-error');
-        el.innerText = msg;
-        el.style.display = 'block';
-        document.getElementById('auth-success').style.display = 'none';
-    }
-
-    function showAuthSuccess(msg) {
-        const el = document.getElementById('auth-success');
-        el.innerText = msg;        el.style.display = 'block';
-        document.getElementById('auth-error').style.display = 'none';
-    }
-
-    function hideAuthMessages() {
-        document.getElementById('auth-error').style.display = 'none';
-        document.getElementById('auth-success').style.display = 'none';
-    }
-
-    function setLoadingAuth(loading) {
-        document.getElementById('auth-loading').style.display = loading ? 'block' : 'none';
-        document.getElementById('auth-submit').disabled = loading;
-        document.getElementById('auth-email').disabled = loading;
-        document.getElementById('auth-password').disabled = loading;
-        document.getElementById('auth-name').disabled = loading;
-    }
-
-    // Login com e-mail e senha
-    async function loginUser(email, password) {
-        try {
-            setLoadingAuth(true);
-            hideAuthMessages();
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            return userCredential.user;
-        } catch (error) {
-            let msg = 'Erro ao entrar. Verifique seus dados.';
-            if (error.code === 'auth/user-not-found') msg = 'Usuário não encontrado.';
-            else if (error.code === 'auth/wrong-password') msg = 'Senha incorreta.';
-            else if (error.code === 'auth/invalid-email') msg = 'E-mail inválido.';
-            else if (error.code === 'auth/too-many-requests') msg = 'Muitas tentativas. Tente mais tarde.';
-            showAuthError(msg);
-            throw error;
-        } finally {
-            setLoadingAuth(false);
-        }
-    }
-
-    // Cadastro com e-mail e senha
-    async function registerUser(email, password, name) {
-        try {
-            setLoadingAuth(true);
-            hideAuthMessages();
-            
-            // Validação adicional no client-side (redundante com as Rules)
-            if (!email || !email.includes('@')) throw new Error('E-mail inválido');
-            if (password.length < 6) throw new Error('Senha muito curta');
-            
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-                        // Salvar nome do usuário no Firestore
-            await db.collection('users').doc(user.uid).set({
-                name: name || 'Usuário',
-                email: email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-            
-            // Inicializar dados vazios para o novo usuário
-            await db.collection('users').doc(user.uid).collection('config').doc('app').set({
-                unlocked: false,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-            
-            showAuthSuccess('Conta criada com sucesso!');
-            return user;
-        } catch (error) {
-            let msg = 'Erro ao criar conta.';
-            if (error.code === 'auth/email-already-in-use') msg = 'Este e-mail já está em uso.';
-            else if (error.code === 'auth/weak-password') msg = 'A senha deve ter pelo menos 6 caracteres.';
-            else if (error.code === 'auth/invalid-email') msg = 'E-mail inválido.';
-            showAuthError(msg);
-            throw error;
-        } finally {
-            setLoadingAuth(false);
-        }
-    }
-
-    // Logout
-    async function logoutUser() {
-        try {
-            await auth.signOut();
-            // Limpar dados locais do usuário anterior
-            localStorage.removeItem('compras');
-            localStorage.removeItem('saldosMensais');
-            localStorage.removeItem('appUnlocked');
-            
-            // Resetar variáveis
-            currentUser = null;
-            compras = [];
-            saldosMensais = {};
-            appUnlocked = false;
-            
-            // Mostrar tela de auth e esconder app
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('btn-logout').style.display = 'none';
-            document.querySelector('.container').style.display = 'none';
-            document.getElementById('block-screen').style.display = 'none';
-            
-            // Resetar formulário de auth
-            document.getElementById('auth-form').reset();            toggleAuthMode(); // Voltar para modo login
-            isLoginMode = true;
-            toggleAuthMode();
-            hideAuthMessages();            
-        } catch (error) {
-            console.error('Erro ao sair:', error);
-            alert('Erro ao sair. Tente novamente.');
-        }
-    }
-
-    // Listener de estado de autenticação
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            // Usuário logado
-            currentUser = user;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('btn-logout').style.display = 'block';
-            document.querySelector('.container').style.display = 'block';
-            
-            // Carregar dados do usuário
-            await initUserData();
-        } else {
-            // Usuário deslogado
-            currentUser = null;
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('btn-logout').style.display = 'none';
-            document.querySelector('.container').style.display = 'none';
-            document.getElementById('block-screen').style.display = 'none';
-        }
-    });
-
-    // Inicializar dados do usuário logado
-    async function initUserData() {
-        if (!currentUser) return;
-        
-        try {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            
-            // Carregar config (unlock) do usuário
-            const configSnap = await userRef.collection('config').doc('app').get();
-            if (configSnap.exists) {
-                const configData = configSnap.data();
-                if (configData.unlocked) {
-                    appUnlocked = true;
-                    localStorage.setItem('appUnlocked', 'true');
-                }
-            }
-            
-            // Carregar saldos do usuário
-            const saldosSnap = await userRef.collection('saldos').doc('mensais').get();            if (saldosSnap.exists) {
-                const saldosData = saldosSnap.data();
-                if (saldosData.dados) {
-                    saldosMensais = saldosData.dados;
-                    localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
-                }
-            }
-            
-            // Carregar compras do usuário
-            const comprasSnap = await userRef.collection('compras').get();
-            if (!comprasSnap.empty) {
-                compras = [];
-                comprasSnap.forEach(doc => {
-                    const data = doc.data();
-                    // Validação de segurança: só aceita dados com estrutura esperada
-                    if (data.id && data.nome && typeof data.valor === 'number') {
-                        compras.push({ id: parseInt(data.id), ...data });
-                    }
-                });
-                localStorage.setItem('compras', JSON.stringify(compras));
-            }
-            
-            console.log('✓ Dados do usuário carregados');
-            checkLock();
-            renderList();
-            setupRealtimeSync(); // Ativar sync em tempo real para este usuário
-            
-        } catch (error) {
-            console.warn('⚠ Usando dados locais:', error.message);
-            checkLock();
-            renderList();
-        }
-    }
-
-    // ============================================
-    // FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE
-    // (Adaptadas para usar dados por usuário + validações)
-    // ============================================
-    
-    // Sanitizar dados antes de enviar ao Firebase
-    function sanitizeCompra(item) {
-        return {
-            id: Number(item.id) || Date.now(),
-            nome: String(item.nome).substring(0, 100),
-            valor: Math.min(Math.max(Number(item.valor) || 0, 0), 999999.99),
-            qtd: Math.min(Math.max(Number(item.qtd) || 1, 1), 9999),
-            unidade: String(item.unidade || 'UN').substring(0, 10),
-            total: Math.min(Math.max(Number(item.total) || 0, 0), 9999999.99),
-            pago: Boolean(item.pago),
-            mes: String(item.mes || '01').match(/^\d{2}$/) ? item.mes : '01'        };
-    }
-
-    // Salvar dados no Firestore + localStorage (por usuário)
-    async function saveData() {
-        if (!currentUser) return; // Só salva se estiver logado
-        
-        // Mantém o localStorage (funcionalidade original)
-        localStorage.setItem('compras', JSON.stringify(compras));
-        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
-        
-        try {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            
-            // Salvar compras em lote (na subcoleção do usuário) com sanitização
-            const batch = db.batch();
-            compras.forEach(item => {
-                const docRef = userRef.collection('compras').doc(item.id.toString());
-                batch.set(docRef, sanitizeCompra(item), { merge: true });
-            });
-            await batch.commit();
-            
-            // Salvar saldos mensais (na subcoleção do usuário)
-            await userRef.collection('saldos').doc('mensais').set({ 
-                dados: saldosMensais, 
-                atualizado: firebase.firestore.FieldValue.serverTimestamp() 
-            }, { merge: true });
-            
-            // Salvar status de desbloqueio (na subcoleção do usuário)
-            await userRef.collection('config').doc('app').set({ 
-                unlocked: appUnlocked, 
-                atualizado: firebase.firestore.FieldValue.serverTimestamp() 
-            }, { merge: true });
-            
-            console.log('✓ Dados sincronizados com Firebase');
-        } catch (error) {
-            console.warn('⚠ Erro ao sincronizar com Firebase (funcionando offline):', error.message);
-            // Continua funcionando com localStorage em caso de falha
-        }
-    }
-
-    // Listener em tempo real para atualizações do Firebase (por usuário)
-    function setupRealtimeSync() {
-        if (!currentUser) return;
-        
-        const userRef = db.collection('users').doc(currentUser.uid);
-        
-        // Ouvir mudanças em saldos
-        userRef.collection('saldos').doc('mensais').onSnapshot((doc) => {
-            if (doc.exists && doc.data().dados) {                // Validação básica dos dados recebidos
-                const dados = doc.data().dados;
-                if (typeof dados === 'object' && dados !== null) {
-                    saldosMensais = dados;
-                    localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
-                    renderList();
-                }
-            }
-        }, (error) => {
-            console.warn('⚠ Erro no listener de saldos:', error.message);
-        });
-        
-        // Ouvir mudanças em compras
-        userRef.collection('compras').onSnapshot((snapshot) => {
-            const novasCompras = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                // Validação de segurança: filtra dados malformados
-                if (data.id && data.nome && typeof data.valor === 'number') {
-                    novasCompras.push({ id: parseInt(data.id), ...data });
-                }
-            });
-            if (JSON.stringify(novasCompras) !== JSON.stringify(compras)) {
-                compras = novasCompras;
-                localStorage.setItem('compras', JSON.stringify(compras));
-                renderList();
-                checkLock();
-            }
-        }, (error) => {
-            console.warn('⚠ Erro no listener de compras:', error.message);
-        });
-    }
-
-    // ============================================
-    // FUNÇÕES ORIGINAIS (mantidas 100% iguais)
-    // ============================================
     // Funções da Calculadora
     let calcExpressao = "";
     function toggleCalc() {
@@ -783,6 +297,7 @@
         calcExpressao += val;
         document.getElementById('calc-display').innerText = calcExpressao;
     }
+
     function clearCalc() {
         calcExpressao = "";
         document.getElementById('calc-display').innerText = "0";
@@ -790,10 +305,6 @@
 
     function execCalc() {
         try {
-            // Sanitização básica para evitar injeção via eval
-            if (!/^[0-9+\-*/.\s()]+$/.test(calcExpressao)) {
-                throw new Error('Expressão inválida');
-            }
             calcExpressao = eval(calcExpressao).toString();
             document.getElementById('calc-display').innerText = calcExpressao;
         } catch {
@@ -803,13 +314,12 @@
     }
 
     function init() {
-        // A autenticação agora controla o carregamento via onAuthStateChanged
-        // init() é chamado, mas os dados só carregam após login
-        console.log('App inicializado - aguardando autenticação...');
+        checkLock();
+        renderList();
     }
 
     function checkLock() {
-        if (compras.length >= 4 && !appUnlocked) {
+        if (compras.length >= 4 && !localStorage.getItem('appUnlocked')) {
             document.getElementById('block-screen').style.display = 'flex';
         }
     }
@@ -817,9 +327,7 @@
     function unlockApp() {
         const pass = document.getElementById('admin-pass').value;
         if(pass === 'itv2026001') {
-            appUnlocked = true;
             localStorage.setItem('appUnlocked', 'true');
-            saveData(); // Salva status no Firebase também
             document.getElementById('block-screen').style.display = 'none';
         } else {
             alert("Senha incorreta!");
@@ -831,6 +339,7 @@
         const q = parseFloat(document.getElementById('qtd-compra').value) || 0;
         document.getElementById('total-preview').innerText = `R$ ${(v * q).toFixed(2)}`;
     }
+
     function addCompra() {
         const nome = document.getElementById('nome-compra').value;
         const valor = parseFloat(document.getElementById('valor-unit').value);
@@ -852,7 +361,7 @@
             compras.push(novaCompra);
         }
 
-        saveData(); // Salva no localStorage + Firebase
+        saveData();
         clearForm();
         renderList();
         checkLock();
@@ -860,34 +369,32 @@
 
     function pagarCompra(id) {
         const idx = compras.findIndex(c => c.id === id);
-        if (idx === -1) return;
-        
         const mesAtual = compras[idx].mes;
         
         compras[idx].pago = true;
         
-        if(saldosMensais[mesAtual] !== undefined) {
+        if(saldosMensais[mesAtual]) {
             saldosMensais[mesAtual] -= compras[idx].total;
         }
         
         let proxMesNum = parseInt(mesAtual) + 1;
-        let proxMes = proxMesNum > 12 ? "01" : proxMesNum.toString().padStart(2, '0');        
+        let proxMes = proxMesNum > 12 ? "01" : proxMesNum.toString().padStart(2, '0');
+        
         const recorrente = {...compras[idx], id: Date.now() + 1, pago: false, mes: proxMes};
         compras.push(recorrente);
 
-        saveData(); // Salva no localStorage + Firebase
+        saveData();
         renderList();
     }
 
     function deletarCompra(id) {
-        compras = compras.filter(c => c.id !== id);        saveData(); // Salva no localStorage + Firebase
+        compras = compras.filter(c => c.id !== id);
+        saveData();
         renderList();
     }
 
     function editCompra(id) {
         const item = compras.find(c => c.id === id);
-        if (!item) return;
-        
         document.getElementById('nome-compra').value = item.nome;
         document.getElementById('valor-unit').value = item.valor;
         document.getElementById('qtd-compra').value = item.qtd;
@@ -901,18 +408,13 @@
         const mes = document.getElementById('filtro-mes').value;
         const valor = parseFloat(document.getElementById('saldo-alim').value) || 0;
         
-        // Validação de segurança no client-side
-        if (valor < 0 || valor > 999999.99) {
-            return alert("Valor de saldo inválido!");
-        }
-        
         saldosMensais[mes] = valor;
         
         document.getElementById('saldo-alim').disabled = true;
         document.getElementById('btn-fixar').style.display = 'none';
         document.getElementById('btn-editar-alim').style.display = 'block';
         
-        saveData(); // Salva no localStorage + Firebase
+        saveData();
         renderList();
     }
 
@@ -922,6 +424,11 @@
         document.getElementById('btn-editar-alim').style.display = 'none';
     }
 
+    function saveData() {
+        localStorage.setItem('compras', JSON.stringify(compras));
+        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+    }
+
     function renderList(filtro = 'todos') {
         const lista = document.getElementById('lista-compras');
         const mesAtual = document.getElementById('filtro-mes').value;
@@ -929,7 +436,8 @@
 
         const saldoDoMes = saldosMensais[mesAtual] || 0;
         document.getElementById('display-saldo').innerText = `R$ ${parseFloat(saldoDoMes).toFixed(2)}`;
-                if(saldosMensais[mesAtual] !== undefined) {
+        
+        if(saldosMensais[mesAtual] !== undefined) {
             document.getElementById('saldo-alim').value = saldosMensais[mesAtual].toFixed(2);
             document.getElementById('saldo-alim').disabled = true;
             document.getElementById('btn-fixar').style.display = 'none';
@@ -975,79 +483,8 @@
         document.getElementById('total-preview').innerText = "R$ 0,00";
     }
 
-    // ============================================
-    // EVENT LISTENER DO FORMULÁRIO DE AUTH
-    // ============================================
-    document.getElementById('auth-form').addEventListener('submit', async (e) => {        e.preventDefault();
-        
-        const email = document.getElementById('auth-email').value.trim();
-        const password = document.getElementById('auth-password').value;
-        const name = document.getElementById('auth-name').value.trim();
-        
-        try {
-            if (isLoginMode) {
-                await loginUser(email, password);
-            } else {
-                await registerUser(email, password, name);
-                // Após cadastro, fazer login automático
-                await loginUser(email, password);
-            }
-        } catch (error) {
-            // Erro já tratado nas funções
-            console.error('Auth error:', error);
-        }
-    });
-
-    // ============================================
-    // PROTEÇÃO CONTRA XSS E INJEÇÃO
-    // Sanitização de inputs ao renderizar
-    // ============================================
-    function escapeHtml(text) {
-        const map = {
-            '&': '&',
-            '<': '<',
-            '>': '>',
-            '"': '"',
-            "'": '&#039;'
-        };
-        return String(text).replace(/[&<>"']/g, m => map[m]);
-    }
-
-    // Inicializa o app
     init();
 </script>
-
-<!-- 
-🔐 RESUMO DAS MEDIDAS DE SEGURANÇA IMPLEMENTADAS:
-
-1. REGRAS FIRESTORE (deploy separado):
-   - Usuários só acessam seus próprios dados (users/{uid}/...)
-   - Validação rigorosa de estrutura de dados nas rules
-   - Bloqueio total de coleções raiz não utilizadas
-   - Sem restrições de tempo conforme solicitado
-
-2. CLIENT-SIDE (neste código):
-   - Sanitização de dados antes de enviar ao Firebase   - Validação de tipos e limites numéricos
-   - Proteção contra XSS com escapeHtml()
-   - Sanitização da expressão da calculadora
-   - Tratamento de erros em listeners em tempo real
-   - Fallback para localStorage em caso de falha de rede
-
-3. AUTENTICAÇÃO:
-   - Firebase Auth com email/senha
-   - Dados isolados por usuário no Firestore
-   - Logout limpa dados locais do usuário anterior
-
-⚠️ IMPORTANTE:
-- As regras de segurança DEVEM ser deployadas no Firebase Console
-- A segurança real depende das Rules, não apenas do client-side
-- Nunca confie apenas na validação do frontend
-
-📋 PARA DEPLOY DAS RULES:
-1. Firebase Console → Firestore → Rules
-2. Cole o código das rules fornecido acima
-3. Clique em "Publicar"
--->
 
 </body>
 </html>

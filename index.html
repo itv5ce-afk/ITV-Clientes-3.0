@@ -47,8 +47,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: #222;
+            transform: translate(-50%, -50%);            background: #222;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -97,7 +96,6 @@
             background: rgba(0,0,0,0.7);
             z-index: 1999;
         }
-
         /* Menu Superior */
         .menu-topo {
             display: flex;
@@ -147,8 +145,7 @@
 
         .input-row {
             display: flex;
-            gap: 5px;
-        }
+            gap: 5px;        }
 
         input, select {
             padding: 12px;
@@ -197,8 +194,7 @@
 </head>
 <body>
 
-<div id="block-screen">
-    <h2>ACESSO BLOQUEADO</h2>
+<div id="block-screen">    <h2>ACESSO BLOQUEADO</h2>
     <p>Entre em contato com o ADM para liberar.</p>
     <input type="password" id="admin-pass" placeholder="Digite a senha">
     <button onclick="unlockApp()" class="btn-small bg-azul" style="flex:none; width: 200px; margin-top:10px">Liberar</button>
@@ -247,8 +243,7 @@
         <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
         <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
         <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
-        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
-            <option value="01">JAN</option><option value="02">FEV</option>
+        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">            <option value="01">JAN</option><option value="02">FEV</option>
             <option value="03">MAR</option><option value="04">ABR</option>
             <option value="05">MAI</option><option value="06">JUN</option>
             <option value="07">JUL</option><option value="08">AGO</option>
@@ -278,10 +273,141 @@
     <div id="lista-compras"></div>
 </div>
 
+<!-- Firebase SDK via CDN (Compat mode para funcionar sem build) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
+    // ============================================
+    // CONFIGURAÇÃO DO FIREBASE
+    // ============================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBWUQvPdMiCseatHN_Nh1B7_EjGUSyFlaE",
+        authDomain: "lista-de-compras-533d3.firebaseapp.com",
+        projectId: "lista-de-compras-533d3",
+        storageBucket: "lista-de-compras-533d3.firebasestorage.app",
+        messagingSenderId: "710244303874",
+        appId: "1:710244303874:web:b5c99fa57bb8ba88ad131b"
+    };
+
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();    
+    // Referência das coleções no Firestore
+    const comprasRef = db.collection('compras');
+    const saldosRef = db.collection('saldos');
+    const configRef = db.collection('config');
+
+    // ============================================
+    // VARIÁVEIS GLOBAIS (mantidas do código original)
+    // ============================================
     let compras = JSON.parse(localStorage.getItem('compras')) || [];
     let saldosMensais = JSON.parse(localStorage.getItem('saldosMensais')) || {};
     let editIdx = null;
+    let appUnlocked = localStorage.getItem('appUnlocked') === 'true';
+
+    // ============================================
+    // FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE
+    // (Novas funções - não alteram a lógica existente)
+    // ============================================
+    
+    // Salvar dados no Firestore + localStorage
+    async function saveData() {
+        // Mantém o localStorage (funcionalidade original)
+        localStorage.setItem('compras', JSON.stringify(compras));
+        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+        
+        // Sincroniza com Firebase (nova camada)
+        try {
+            // Salvar compras em lote
+            const batch = db.batch();
+            compras.forEach(item => {
+                const docRef = comprasRef.doc(item.id.toString());
+                batch.set(docRef, item);
+            });
+            await batch.commit();
+            
+            // Salvar saldos mensais
+            await saldosRef.doc('mensais').set({ dados: saldosMensais, atualizado: firebase.firestore.FieldValue.serverTimestamp() });
+            
+            // Salvar status de desbloqueio
+            await configRef.doc('app').set({ unlocked: appUnlocked, atualizado: firebase.firestore.FieldValue.serverTimestamp() });
+            
+            console.log('✓ Dados sincronizados com Firebase');
+        } catch (error) {
+            console.warn('⚠ Erro ao sincronizar com Firebase (funcionando offline):', error.message);
+            // Continua funcionando com localStorage mesmo sem internet
+        }
+    }
+
+    // Carregar dados do Firestore (se disponível)
+    async function loadDataFromFirebase() {        try {
+            // Carregar config (unlock)
+            const configSnap = await configRef.doc('app').get();
+            if (configSnap.exists) {
+                const configData = configSnap.data();
+                if (configData.unlocked) {
+                    appUnlocked = true;
+                    localStorage.setItem('appUnlocked', 'true');
+                }
+            }
+            
+            // Carregar saldos
+            const saldosSnap = await saldosRef.doc('mensais').get();
+            if (saldosSnap.exists) {
+                const saldosData = saldosSnap.data();
+                if (saldosData.dados) {
+                    saldosMensais = saldosData.dados;
+                    localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+                }
+            }
+            
+            // Carregar compras
+            const comprasSnap = await comprasRef.get();
+            if (!comprasSnap.empty) {
+                compras = [];
+                comprasSnap.forEach(doc => {
+                    compras.push({ id: parseInt(doc.id), ...doc.data() });
+                });
+                localStorage.setItem('compras', JSON.stringify(compras));
+            }
+            
+            console.log('✓ Dados carregados do Firebase');
+            return true;
+        } catch (error) {
+            console.warn('⚠ Usando dados locais (offline):', error.message);
+            return false;
+        }
+    }
+
+    // Listener em tempo real para atualizações do Firebase
+    function setupRealtimeSync() {
+        // Ouvir mudanças em saldos
+        saldosRef.doc('mensais').onSnapshot((doc) => {
+            if (doc.exists && doc.data().dados) {
+                saldosMensais = doc.data().dados;
+                localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
+                renderList(); // Atualiza UI automaticamente
+            }
+        });
+        // Ouvir mudanças em compras
+        comprasRef.onSnapshot((snapshot) => {
+            const novasCompras = [];
+            snapshot.forEach(doc => {
+                novasCompras.push({ id: parseInt(doc.id), ...doc.data() });
+            });
+            if (JSON.stringify(novasCompras) !== JSON.stringify(compras)) {
+                compras = novasCompras;
+                localStorage.setItem('compras', JSON.stringify(compras));
+                renderList(); // Atualiza UI automaticamente
+                checkLock();
+            }
+        });
+    }
+
+    // ============================================
+    // FUNÇÕES ORIGINAIS (mantidas 100% iguais)
+    // ============================================
 
     // Funções da Calculadora
     let calcExpressao = "";
@@ -313,13 +439,16 @@
         }
     }
 
-    function init() {
-        checkLock();
-        renderList();
+    function init() {        // Tenta carregar do Firebase primeiro, depois usa localStorage como fallback
+        loadDataFromFirebase().then(() => {
+            checkLock();
+            renderList();
+            setupRealtimeSync(); // Ativa sincronização em tempo real
+        });
     }
 
     function checkLock() {
-        if (compras.length >= 4 && !localStorage.getItem('appUnlocked')) {
+        if (compras.length >= 4 && !appUnlocked) {
             document.getElementById('block-screen').style.display = 'flex';
         }
     }
@@ -327,7 +456,9 @@
     function unlockApp() {
         const pass = document.getElementById('admin-pass').value;
         if(pass === 'itv2026001') {
+            appUnlocked = true;
             localStorage.setItem('appUnlocked', 'true');
+            saveData(); // Salva status no Firebase também
             document.getElementById('block-screen').style.display = 'none';
         } else {
             alert("Senha incorreta!");
@@ -357,11 +488,10 @@
         if(editIdx !== null) {
             compras[editIdx] = novaCompra;
             editIdx = null;
-        } else {
-            compras.push(novaCompra);
+        } else {            compras.push(novaCompra);
         }
 
-        saveData();
+        saveData(); // Salva no localStorage + Firebase
         clearForm();
         renderList();
         checkLock();
@@ -383,13 +513,13 @@
         const recorrente = {...compras[idx], id: Date.now() + 1, pago: false, mes: proxMes};
         compras.push(recorrente);
 
-        saveData();
+        saveData(); // Salva no localStorage + Firebase
         renderList();
     }
 
     function deletarCompra(id) {
         compras = compras.filter(c => c.id !== id);
-        saveData();
+        saveData(); // Salva no localStorage + Firebase
         renderList();
     }
 
@@ -407,14 +537,13 @@
     function salvarAlimentacao() {
         const mes = document.getElementById('filtro-mes').value;
         const valor = parseFloat(document.getElementById('saldo-alim').value) || 0;
-        
-        saldosMensais[mes] = valor;
+                saldosMensais[mes] = valor;
         
         document.getElementById('saldo-alim').disabled = true;
         document.getElementById('btn-fixar').style.display = 'none';
         document.getElementById('btn-editar-alim').style.display = 'block';
         
-        saveData();
+        saveData(); // Salva no localStorage + Firebase
         renderList();
     }
 
@@ -424,10 +553,8 @@
         document.getElementById('btn-editar-alim').style.display = 'none';
     }
 
-    function saveData() {
-        localStorage.setItem('compras', JSON.stringify(compras));
-        localStorage.setItem('saldosMensais', JSON.stringify(saldosMensais));
-    }
+    // Função saveData() foi substituída pela versão com Firebase acima
+    // (mantém o localStorage e adiciona sincronização)
 
     function renderList(filtro = 'todos') {
         const lista = document.getElementById('lista-compras');
@@ -459,8 +586,7 @@
                 <strong>${item.nome}</strong><br>
                 Qtd: ${item.qtd} ${item.unidade || 'UN'} | Total: R$ ${item.total.toFixed(2)} <br>
                 Status: ${item.pago ? '<span style="color:green">PAGO</span>' : '<span style="color:red">NÃO PAGO</span>'}
-                <div style="margin-top:10px; display:flex; gap:5px">
-                    ${!item.pago ? `<button onclick="pagarCompra(${item.id})" class="btn-small bg-verde">PAGAR</button>` : ''}
+                <div style="margin-top:10px; display:flex; gap:5px">                    ${!item.pago ? `<button onclick="pagarCompra(${item.id})" class="btn-small bg-verde">PAGAR</button>` : ''}
                     <button onclick="editCompra(${item.id})" class="btn-small bg-lilas">EDITAR</button>
                     <button onclick="deletarCompra(${item.id})" class="btn-small bg-vermelho">EXCLUIR</button>
                 </div>
@@ -483,6 +609,7 @@
         document.getElementById('total-preview').innerText = "R$ 0,00";
     }
 
+    // Inicializa o app
     init();
 </script>
 

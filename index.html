@@ -145,8 +145,7 @@
         .input-row {
             display: flex;
             gap: 5px;
-        }
-        input, select {
+        }        input, select {
             padding: 12px;
             border-radius: 5px;
             border: none;
@@ -167,34 +166,12 @@
         .item-compra.pago { border-left: 8px solid var(--verde); }
         .item-compra.pendente { border-left: 8px solid var(--vermelho); }
 
-        /* Bloqueio ADM */
-        #block-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #1a1a2e;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            text-align: center;
-        }
-
-        .btn-wpp {
-            background: #25d366;
-            color: white;
-            padding: 15px;
-            text-decoration: none;
-            border-radius: 50px;
-            margin-top: 20px;
-            display: inline-block;
-        }
-
         /* Indicador de sincronização */
         .sync-status {
             position: fixed;
             bottom: 10px;
-            right: 10px;            padding: 5px 10px;
+            right: 10px;
+            padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.7rem;
             z-index: 100;
@@ -203,7 +180,7 @@
         .sync-error { background: var(--vermelho); }
         .sync-pending { background: var(--laranja); }
 
-        /* === NOVO: ESTILOS DO LOGIN === */
+        /* === ESTILOS DO LOGIN === */
         #login-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -217,8 +194,7 @@
             box-sizing: border-box;
         }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.1);
+        .login-card {            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 20px;
             width: 100%;
@@ -243,7 +219,8 @@
             border: none;
             background: rgba(255,255,255,0.9);
             color: #333;
-            font-size: 1rem;            box-sizing: border-box;
+            font-size: 1rem;
+            box-sizing: border-box;
         }
 
         .login-input::placeholder { color: #666; }
@@ -266,8 +243,7 @@
 
         .login-toggle {
             text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
+            margin-top: 15px;            font-size: 0.9rem;
             color: #ccc;
         }
 
@@ -292,7 +268,8 @@
         }
 
         .user-info {
-            position: absolute;            top: 10px;
+            position: absolute;
+            top: 10px;
             left: 15px;
             display: flex;
             align-items: center;
@@ -315,8 +292,7 @@
         .loading {
             display: inline-block;
             width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            height: 20px;            border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
@@ -333,7 +309,7 @@
 </head>
 <body>
 
-<!-- === NOVO: TELA DE LOGIN === -->
+<!-- === TELA DE LOGIN === -->
 <div id="login-screen">
     <div class="login-card">
         <h2>🔐 MINHAS COMPRAS 1.0</h2>
@@ -341,7 +317,8 @@
         <div id="login-error" class="login-error"></div>
         
         <!-- Formulário de Login -->
-        <div id="form-login">            <input type="email" id="login-email" class="login-input" placeholder="📧 Seu e-mail" required>
+        <div id="form-login">
+            <input type="email" id="login-email" class="login-input" placeholder="📧 Seu e-mail" required>
             <input type="password" id="login-senha" class="login-input" placeholder="🔒 Sua senha" required>
             <button onclick="fazerLogin()" class="login-btn" id="btn-login">
                 ENTRAR
@@ -364,17 +341,7 @@
                 Já tem conta? <a onclick="alternarCadastro()">Fazer login</a>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Bloqueio ADM (mantido original) -->
-<div id="block-screen">
-    <h2>ACESSO BLOQUEADO</h2>
-    <p>Entre em contato com o ADM para liberar.</p>
-    <input type="password" id="admin-pass" placeholder="Digite a senha">
-    <button onclick="unlockApp()" class="btn-small bg-azul" style="flex:none; width: 200px; margin-top:10px">Liberar</button>
-    <a href="https://wa.me/5585996498573" class="btn-wpp">Chamar no WhatsApp</a>
-</div>
+    </div></div>
 
 <div class="overlay" id="overlay" onclick="toggleCalc()"></div>
 <div id="calc-modal">
@@ -390,7 +357,8 @@
         <button class="btn-calc" onclick="addCalc('4')">4</button>
         <button class="btn-calc" onclick="addCalc('5')">5</button>
         <button class="btn-calc" onclick="addCalc('6')">6</button>
-        <button class="btn-calc op" onclick="addCalc('+')">+</button>        <button class="btn-calc" onclick="addCalc('1')">1</button>
+        <button class="btn-calc op" onclick="addCalc('+')">+</button>
+        <button class="btn-calc" onclick="addCalc('1')">1</button>
         <button class="btn-calc" onclick="addCalc('2')">2</button>
         <button class="btn-calc" onclick="addCalc('3')">3</button>
         <button class="btn-calc" onclick="addCalc('.')">.</button>
@@ -422,8 +390,7 @@
     <div class="menu-topo">
         <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
         <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
-        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>
-        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
+        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
             <option value="01">JAN</option><option value="02">FEV</option>
             <option value="03">MAR</option><option value="04">ABR</option>
             <option value="05">MAI</option><option value="06">JUN</option>
@@ -439,7 +406,8 @@
         <div class="input-row">
             <input type="number" id="qtd-compra" placeholder="Qtd" oninput="calcTotal()" style="flex: 2;">
             <select id="unidade-compra" style="flex: 1;">
-                <option value="UN">UN</option>                <option value="CX">CX</option>
+                <option value="UN">UN</option>
+                <option value="CX">CX</option>
                 <option value="KG">KG</option>
                 <option value="ML">ML</option>
                 <option value="PC">PC</option>
@@ -470,10 +438,8 @@
         onSnapshot,
         enableIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    // === NOVO: Importar Authentication ===
     import { 
-        getAuth, 
-        createUserWithEmailAndPassword, 
+        getAuth,         createUserWithEmailAndPassword, 
         signInWithEmailAndPassword, 
         signOut, 
         onAuthStateChanged 
@@ -488,10 +454,10 @@
         messagingSenderId: "701417243300",
         appId: "1:701417243300:web:ac56526f1096c64aa3dc31"
     };
+    
     // Inicializa Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    // === NOVO: Inicializar Auth ===
     const auth = getAuth(app);
 
     // Habilita persistência offline
@@ -511,37 +477,31 @@
     window.saldosMensais = {};
     window.editIdx = null;
     window.db = db;
-    // === NOVO: Exportar auth ===
     window.auth = auth;
 
-    // === NOVO: FUNÇÕES DE AUTENTICAÇÃO ===
+    // === FUNÇÕES DE AUTENTICAÇÃO ===
     
-    // Verificar estado de autenticação
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // Usuário logado
             window.usuarioAtual = user;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-content').style.display = 'block';
             document.getElementById('user-display').textContent = `👤 ${user.email}`;
             
-            // Iniciar sincronização com Firebase
-            if (typeof window.syncFromFirebase === 'function') {
-                window.syncFromFirebase();
+            if (typeof window.syncFromFirebase === 'function') {                window.syncFromFirebase();
             }
             if (typeof window.init === 'function') {
                 window.init();
             }
         } else {
-            // Usuário não logado
             window.usuarioAtual = null;
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('app-content').style.display = 'none';
-            document.getElementById('form-cadastro').classList.add('hidden');            document.getElementById('form-login').classList.remove('hidden');
+            document.getElementById('form-cadastro').classList.add('hidden');
+            document.getElementById('form-login').classList.remove('hidden');
         }
     });
 
-    // Função para criar conta
     window.criarConta = async function() {
         const nome = document.getElementById('cad-nome').value.trim();
         const email = document.getElementById('cad-email').value.trim();
@@ -550,7 +510,6 @@
         const errorDiv = document.getElementById('login-error');
         const btn = document.getElementById('btn-cadastro');
 
-        // Validações
         if (!nome || !email || !senha || !confirmar) {
             errorDiv.textContent = '⚠ Preencha todos os campos!';
             errorDiv.style.display = 'block';
@@ -567,7 +526,6 @@
             return;
         }
 
-        // Loading
         const originalText = btn.innerHTML;
         btn.innerHTML = '<span class="loading"></span> Criando...';
         btn.disabled = true;
@@ -575,14 +533,11 @@
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-            // Salvar nome do usuário no perfil
             await updateDoc(doc(db, "users", userCredential.user.uid), {
                 nome: nome,
                 email: email,
                 createdAt: new Date()
-            }, { merge: true });
-            
-            // Limpar formulário
+            }, { merge: true });            
             document.getElementById('cad-nome').value = '';
             document.getElementById('cad-email').value = '';
             document.getElementById('cad-senha').value = '';
@@ -602,7 +557,6 @@
         }
     };
 
-    // Função para fazer login
     window.fazerLogin = async function() {
         const email = document.getElementById('login-email').value.trim();
         const senha = document.getElementById('login-senha').value;
@@ -615,7 +569,6 @@
             return;
         }
 
-        // Loading
         const originalText = btn.innerHTML;
         btn.innerHTML = '<span class="loading"></span> Entrando...';
         btn.disabled = true;
@@ -623,7 +576,6 @@
 
         try {
             await signInWithEmailAndPassword(auth, email, senha);
-            // Login bem-sucedido - onAuthStateChanged cuidará do resto
         } catch (error) {
             console.error("Erro ao fazer login:", error);
             let mensagem = '⚠ Erro ao entrar. ';
@@ -634,19 +586,17 @@
             } else {
                 mensagem += 'Tente novamente.';
             }
-            errorDiv.textContent = mensagem;
-            errorDiv.style.display = 'block';        } finally {
+            errorDiv.textContent = mensagem;            errorDiv.style.display = 'block';
+        } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
     };
 
-    // Função para fazer logout
     window.fazerLogout = async function() {
         if (confirm('Deseja realmente sair da conta?')) {
             try {
                 await signOut(auth);
-                // Limpar dados locais ao sair
                 window.compras = [];
                 window.saldosMensais = {};
             } catch (error) {
@@ -656,7 +606,6 @@
         }
     };
 
-    // Alternar entre login e cadastro
     window.alternarCadastro = function() {
         const formLogin = document.getElementById('form-login');
         const formCadastro = document.getElementById('form-cadastro');
@@ -666,7 +615,6 @@
         formCadastro.classList.toggle('hidden');
         errorDiv.style.display = 'none';
         
-        // Limpar campos ao alternar
         document.getElementById('login-email').value = '';
         document.getElementById('login-senha').value = '';
         document.getElementById('cad-nome').value = '';
@@ -675,26 +623,23 @@
         document.getElementById('cad-confirmar').value = '';
     };
 
-    // === FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE (mantidas) ===
+    // === FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE ===
     
     function syncFromFirebase() {
-        // Só sincroniza se usuário estiver autenticado
         if (!auth.currentUser) return;
         
-        // Usar UID do usuário para documento único por usuário
         const userComprasRef = doc(db, "users", auth.currentUser.uid, "compras", "lista");
         
-        onSnapshot(userComprasRef, (docSnap) => {            if (docSnap.exists()) {
+        onSnapshot(userComprasRef, (docSnap) => {
+            if (docSnap.exists()) {
                 const data = docSnap.data();
                 window.compras = data.compras || [];
                 window.saldosMensais = data.saldosMensais || {};
-                
-                if (typeof window.renderList === 'function') {
+                                if (typeof window.renderList === 'function') {
                     window.renderList();
                 }
                 updateSyncStatus('ok');
             } else {
-                // Criar documento vazio para o usuário
                 saveToFirebase();
             }
         }, (error) => {
@@ -733,13 +678,13 @@
                 localStorage.setItem('compras_' + auth.currentUser.uid, JSON.stringify(window.compras));
                 localStorage.setItem('saldosMensais_' + auth.currentUser.uid, JSON.stringify(window.saldosMensais));
             }
-        } catch(e) {            console.warn("Não foi possível salvar no localStorage");
+        } catch(e) {
+            console.warn("Não foi possível salvar no localStorage");
         }
     }
 
     function loadFromLocalStorage() {
-        try {
-            if (auth.currentUser) {
+        try {            if (auth.currentUser) {
                 const comprasLocal = localStorage.getItem('compras_' + auth.currentUser.uid);
                 const saldosLocal = localStorage.getItem('saldosMensais_' + auth.currentUser.uid);
                 if (comprasLocal) window.compras = JSON.parse(comprasLocal);
@@ -776,20 +721,19 @@
         }
     }
 
-    // Exporta funções para escopo global
     window.syncFromFirebase = syncFromFirebase;
     window.saveToFirebase = saveToFirebase;
     window.updateSyncStatus = updateSyncStatus;
 </script>
 
-<script>    // === CÓDIGO ORIGINAL (INALTERADO) COM ADAPTAÇÕES MÍNIMAS ===
+<script>
+    // === CÓDIGO ORIGINAL COM ADAPTAÇÕES MÍNIMAS ===
     
     let editIdx = null;
 
     // Funções da Calculadora
     let calcExpressao = "";
-    function toggleCalc() {
-        const modal = document.getElementById('calc-modal');
+    function toggleCalc() {        const modal = document.getElementById('calc-modal');
         const overlay = document.getElementById('overlay');
         const isVisible = modal.style.display === 'block';
         modal.style.display = isVisible ? 'none' : 'block';
@@ -817,26 +761,14 @@
     }
 
     function init() {
-        checkLock();
+        // ✅ REMOVIDO: checkLock() - bloqueio de 4 contas e senha ADM
         if (window.compras && window.compras.length > 0) {
             renderList();
         }
     }
 
-    function checkLock() {
-        if (window.compras && window.compras.length >= 4 && !localStorage.getItem('appUnlocked')) {
-            document.getElementById('block-screen').style.display = 'flex';
-        }
-    }
-    
-    function unlockApp() {
-        const pass = document.getElementById('admin-pass').value;
-        if(pass === 'itv2026001') {            localStorage.setItem('appUnlocked', 'true');
-            document.getElementById('block-screen').style.display = 'none';
-        } else {
-            alert("Senha incorreta!");
-        }
-    }
+    // ✅ FUNÇÃO checkLock REMOVIDA - sem limite de contas
+    // ✅ FUNÇÃO unlockApp REMOVIDA - sem senha de administrador
 
     function calcTotal() {
         const v = parseFloat(document.getElementById('valor-unit').value) || 0;
@@ -845,14 +777,12 @@
     }
 
     function addCompra() {
-        // === NOVO: Verificar se usuário está logado ===
         if (!window.auth || !window.auth.currentUser) {
             alert('Você precisa estar logado para cadastrar compras!');
             return;
         }
         
-        const nome = document.getElementById('nome-compra').value;
-        const valor = parseFloat(document.getElementById('valor-unit').value);
+        const nome = document.getElementById('nome-compra').value;        const valor = parseFloat(document.getElementById('valor-unit').value);
         const qtd = parseFloat(document.getElementById('qtd-compra').value);
         const unidade = document.getElementById('unidade-compra').value;
         const mes = document.getElementById('filtro-mes').value;
@@ -874,13 +804,14 @@
         saveData();
         clearForm();
         renderList();
-        checkLock();
+        // ✅ REMOVIDO: checkLock() após adicionar compra
     }
 
     function pagarCompra(id) {
         if (!window.auth || !window.auth.currentUser) {
             alert('Você precisa estar logado para realizar esta ação!');
-            return;        }
+            return;
+        }
         
         const idx = window.compras.findIndex(c => c.id === id);
         if (idx === -1) return;
@@ -901,7 +832,6 @@
         saveData();
         renderList();
     }
-
     function deletarCompra(id) {
         if (!window.auth || !window.auth.currentUser) {
             alert('Você precisa estar logado para realizar esta ação!');
@@ -930,6 +860,7 @@
         calcTotal();
         window.scrollTo(0,0);
     }
+    
     function salvarAlimentacao() {
         if (!window.auth || !window.auth.currentUser) {
             alert('Você precisa estar logado para realizar esta ação!');
@@ -949,8 +880,7 @@
         renderList();
     }
 
-    function editarAlimentacao() {
-        document.getElementById('saldo-alim').disabled = false;
+    function editarAlimentacao() {        document.getElementById('saldo-alim').disabled = false;
         document.getElementById('btn-fixar').style.display = 'block';
         document.getElementById('btn-editar-alim').style.display = 'none';
     }
@@ -978,7 +908,8 @@
             document.getElementById('btn-fixar').style.display = 'none';
             document.getElementById('btn-editar-alim').style.display = 'block';
         } else {
-            document.getElementById('saldo-alim').value = "";            document.getElementById('saldo-alim').disabled = false;
+            document.getElementById('saldo-alim').value = "";
+            document.getElementById('saldo-alim').disabled = false;
             document.getElementById('btn-fixar').style.display = 'block';
             document.getElementById('btn-editar-alim').style.display = 'none';
         }
@@ -998,8 +929,7 @@
                     <button onclick="editCompra(${item.id})" class="btn-small bg-lilas">EDITAR</button>
                     <button onclick="deletarCompra(${item.id})" class="btn-small bg-vermelho">EXCLUIR</button>
                 </div>
-            `;
-            lista.appendChild(div);
+            `;            lista.appendChild(div);
         });
     }
 
@@ -1017,8 +947,7 @@
         document.getElementById('total-preview').innerText = "R$ 0,00";
     }
 
-    // Inicializa app
-    // init() agora é chamado após login bem-sucedido via onAuthStateChanged
+    // Inicializa app via onAuthStateChanged
 </script>
 
 </body>

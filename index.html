@@ -2,954 +2,1457 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗒</text></svg>">
-    <title>LISTA COMPRAS 1.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <link rel="icon" type="image/png" href="https://github.com/itv5ce-afk/LOGO_ITVPLAYER/raw/refs/heads/main/20211122_192815.ico">
+    <title>ITVClientes.2.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        :root {
-            --azul: #2196F3;
-            --lilas: #9c27b0;
-            --vermelho: #f44336;
-            --verde: #4CAF50;
-            --laranja: #ff9800;
-            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000; color: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif; padding-bottom: 80px; }
+        .navbar { background-color: #111; border-top: 1px solid #333; position: fixed; bottom: 0; left: 0; right: 0; top: auto; z-index: 1020; padding: 6px 10px; }
+        .card-cliente { background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; margin-bottom: 12px; padding: 14px; transition: all 0.1s ease; cursor: pointer; }
+        .card-cliente:active { transform: scale(0.98); }
+        .btn-small { font-size: 0.7rem; padding: 5px; flex: 1; margin: 2px; border: none; color: white; border-radius: 30px; font-weight: 500; }
+        .bg-lilas { background-color: #9933ff !important; color: white; }
+        #adminLock { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .menu-lateral { height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; left: 0; background-color: #111; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 12px rgba(0,0,0,0.5); overflow-y: auto; }
+        .menu-lateral a, .menu-lateral label { padding: 8px 32px; text-decoration: none; font-size: 16px; color: #ddd; display: block; }
+        .card-financeiro { background: #222; border-left: 4px solid #9933ff; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+        .stat-val { font-size: 1.4rem; font-weight: bold; color: #00ff00; }
+        .stat-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .auth-card { background: #111; border: 1px solid #333; border-radius: 24px; padding: 28px 22px; width: 100%; max-width: 380px; margin: 16px; }
+        .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .filter-buttons button { flex: 1; min-width: 70px; font-size: 0.75rem; font-weight: 600; border-radius: 40px; padding: 6px 0; }
+        .btn-sm-custom { font-size: 0.7rem; padding: 6px 12px; border-radius: 40px; font-weight: 500; }
+        .modal-content { background: #1e1e1e; border-radius: 28px; border: none; }
+        input, textarea, .form-control, .form-select { background-color: #2a2a2a !important; color: white !important; border-color: #444 !important; border-radius: 14px !important; }
+        input:focus, textarea:focus { border-color: #9933ff !important; box-shadow: 0 0 0 2px rgba(153,51,255,0.3) !important; }
+        .badge { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; }
+        hr { opacity: 0.3; }
+        .btn-outline-light { border-radius: 40px; }
+        .nav-buttons-painel { display: flex; gap: 8px; margin-bottom: 20px; }
+        
+        /* Novos estilos para o card de informações */
+        .cliente-info { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 0.78rem; color: #ccc; margin-top: 6px; }
+        .cliente-info .info-item { display: flex; gap: 4px; }
+        .cliente-info .info-label { color: #888; font-weight: 500; }
+        .cliente-info .info-value { color: #fff; word-break: break-all; }
+        .cliente-info .info-full { grid-column: 1 / -1; }
+        
+        /* Estilos para os botões do modal de ações */
+        .modal-acoes-grid { display: flex; flex-direction: column; gap: 10px; }
+        .modal-acoes-row { display: flex; gap: 8px; }
+        .modal-acoes-row .btn { flex: 1; font-size: 0.78rem; font-weight: 600; padding: 10px 4px; border-radius: 12px; border: none; color: white; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background: var(--bg-gradient);
-            color: white;
-            min-height: 100vh;
-        }
-
-        .container { padding: 15px; max-width: 500px; margin: auto; position: relative; }
-
-        h1 { text-align: center; font-size: 1.5rem; color: #00d2ff; margin-top: 40px; }
-
-        /* Botão Calculadora Superior Direito */
-        .btn-calc-topo {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: var(--laranja);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        /* Modal da Calculadora */
-        #calc-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);            background: #222;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            z-index: 2000;
-            width: 260px;
-        }
-
-        #calc-display {
-            width: 100%;
-            height: 50px;
-            background: #000;
-            color: #0f0;
-            text-align: right;
-            padding: 10px;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            box-sizing: border-box;
-            border: 1px solid #444;
-        }
-
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-        }
-
-        .btn-calc {
-            padding: 15px;
-            font-size: 1.1rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background: #444;
-            color: white;
-        }
-
-        .btn-calc.op { background: var(--laranja); }
-        .btn-calc.igual { background: var(--verde); grid-column: span 2; }
-        .btn-calc.clear { background: var(--vermelho); grid-column: span 2; }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1999;
-        }
-        /* Menu Superior */        .menu-topo {
-            display: flex;
+        /* NOVA NAVBAR INFERIOR */
+        .navbar-inferior {            display: flex;            align-items: center;
             justify-content: space-between;
-            gap: 5px;
-            margin-bottom: 20px;
+            width: 100%;
+            gap: 10px;
         }
-
-        .btn-small {
+        .navbar-inferior .nav-left,
+        .navbar-inferior .nav-right {
             flex: 1;
-            padding: 10px 5px;
-            border: none;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-inferior .nav-right {
+            justify-content: flex-end;
+        }
+        .navbar-inferior .nav-center {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-add-fixo {
+            background-color: #198754;
             color: white;
-            font-weight: bold;
-            font-size: 0.7rem;
-            cursor: pointer;
-            text-transform: uppercase;
+            border: none;
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -2px 12px rgba(25,135,84,0.5);
+            margin-top: -20px;
+        }
+        .btn-add-fixo:active { transform: scale(0.95); }
+        .navbar-brand-bottom {
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .navbar-brand-bottom small {
+            display: block;
+            font-size: 0.6rem;
+            color: #aaa;
+            font-weight: 400;
+        }
+        .btn-menu-bottom {            background: transparent;
+            border: none;            color: #fff;
+            font-size: 1.6rem;
+            padding: 4px 8px;
         }
 
-        /* Cores dos Botões */
-        .bg-azul { background-color: var(--azul); }
-        .bg-verde { background-color: var(--verde); }
-        .bg-vermelho { background-color: var(--vermelho); }
-        .bg-lilas { background-color: var(--lilas); }
-        .bg-laranja { background-color: var(--laranja); }
-
-        /* Card de Alimentação */
-        .card-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Formulário */
-        .form-group {
+        /* ===== NOVOS ESTILOS - MENU LATERAL COM BOTÕES ===== */
+        .menu-btn-group {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 16px 20px;
         }
-
-        .input-row {
+        .menu-btn-principal {
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border: 1px solid #444;
+            color: #fff;
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
             display: flex;
-            gap: 5px;
-        }        input, select {
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-btn-principal:active { transform: scale(0.98); border-color: #9933ff; }
+        .menu-btn-principal.active { border-color: #9933ff; background: linear-gradient(135deg, #3a1a5a, #1a1a1a); }
+        .menu-btn-principal .bi { font-size: 1.2rem; color: #9933ff; }
+        .menu-secao {
+            display: none;
+            padding: 12px 20px 20px 20px;
+            border-top: 1px solid #222;
+            margin-top: 4px;
+        }
+        .menu-secao.active { display: block; }
+        .menu-secao h6 {
+            color: #9933ff;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .painel-config-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
             padding: 12px;
-            border-radius: 5px;
-            border: none;
-            background: #eee;
-            color: #333;
+            margin-bottom: 12px;
         }
-
-        /* Lista de Compras */
-        .item-compra {
-            background: white;
-            color: #333;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            position: relative;
-        }
-
-        .item-compra.pago { border-left: 8px solid var(--verde); }
-        .item-compra.pendente { border-left: 8px solid var(--vermelho); }
-
-        /* Indicador de sincronização */
-        .sync-status {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            z-index: 100;
-        }
-        .sync-ok { background: var(--verde); }
-        .sync-error { background: var(--vermelho); }
-        .sync-pending { background: var(--laranja); }
-
-        /* === ESTILOS DO LOGIN === */
-        #login-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-gradient);
+        .painel-config-card h6 {
+            color: #fff;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .creditos-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 6px 10px;
+            margin-top: 8px;
+        }
+        .creditos-display .cred-label { font-size: 0.72rem; color: #aaa; }
+        .creditos-display .cred-value { font-size: 1.1rem; font-weight: bold; color: #00ff00; }
+        .creditos-controls { display: flex; align-items: center; gap: 6px; }
+        .creditos-controls button {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: none;
+            font-weight: bold;
+            color: white;
+            display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 3000;
-            padding: 20px;
-            box-sizing: border-box;
         }
-
-        .login-card {            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 400px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        .creditos-controls .btn-menos { background: #dc3545; }
+        .creditos-controls .btn-mais { background: #198754; }
+        .creditos-controls input {
+            width: 60px !important;
+            text-align: center !important;
+            font-weight: bold !important;
+            padding: 4px !important;
         }
-
-        .login-card h2 {
-            text-align: center;
-            color: #00d2ff;
-            margin: 0 0 20px 0;
-            font-size: 1.4rem;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: none;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .login-input::placeholder { color: #666; }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            margin: 15px 0 10px 0;
-            border: none;
-            border-radius: 8px;
-            background: var(--azul);
+        .badge-creditos {
+            background: #9933ff;
             color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 50px;
+            margin-left: auto;
         }
-
-        .login-btn:hover { background: #1976d2; }
-
-        .login-toggle {
-            text-align: center;
-            margin-top: 15px;            font-size: 0.9rem;
-            color: #ccc;
-        }
-
-        .login-toggle a {
-            color: #00d2ff;
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .login-toggle a:hover { text-decoration: underline; }
-
-        .login-error {
-            background: rgba(244, 67, 54, 0.2);
-            color: #ffcdd2;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 0.9rem;
-            text-align: center;
-            display: none;
-        }
-
-        .user-info {
-            position: absolute;
-            top: 10px;
-            left: 15px;
+        
+        /* NOVO: Estilos para toggle switch */
+        .toggle-container {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            z-index: 10;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
-
-        .btn-logout {
-            background: var(--vermelho);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
             cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: bold;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 26px;
         }
-
-        .loading {
-            display: inline-block;
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
             width: 20px;
-            height: 20px;            border: 3px solid rgba(255,255,255,0.3);
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-            vertical-align: middle;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        input:checked + .toggle-slider {
+            background-color: #198754;
         }
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        /* ==========================================================================
+           NOVOS ESTILOS: BANCO ITV (Aplicativo Mobile / Desktop Responsivo)
+           ========================================================================== */
+        .modal-banco-itv .modal-content {
+            background: #0f1115;
+            border-radius: 0;
+            height: 100vh;
+            border: none;
+        }
+        @media (min-width: 768px) {
+            .modal-banco-itv .modal-dialog {
+                max-width: 900px;
+                margin: 1.75rem auto;
+            }
+            .modal-banco-itv .modal-content {
+                height: 85vh;
+                border-radius: 24px;
+                border: 1px solid #333;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            }
+        }
+        .banco-header {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            padding: 20px;
+            border-radius: 0 0 24px 24px;
+            margin: -1px -1px 20px -1px;
+        }
+        .banco-nav {
+            display: flex;
+            background: #1a1d24;
+            border-radius: 16px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .banco-nav-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .banco-nav-btn.active {
+            background: #0d6efd;
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+        .fintech-card {
+            background: #1a1d24;
+            border: 1px solid #2a2e38;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .fintech-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .fintech-stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .emprestimo-item {
+            background: #1a1d24;
+            border: 1px solid #2a2e38;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: transform 0.2s;
+        }
+        .emprestimo-item:active { transform: scale(0.98); }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-ativo { background: rgba(13, 202, 240, 0.15); color: #0dcaf0; }
+        .status-atrasado { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
+        .status-pago { background: rgba(25, 135, 84, 0.15); color: #198754; }
+        
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .hidden { display: none !important; }
+        @media (max-width: 576px) {            .card-cliente h5 { font-size: 1rem; }
+            .stat-val { font-size: 1.2rem; }
+            .modal-acoes-row .btn { font-size: 0.72rem; padding: 9px 2px; }
+            .navbar-brand-bottom { font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
 
-<!-- === TELA DE LOGIN === -->
-<div id="login-screen">
-    <div class="login-card">
-        <h2>🔐 MINHAS COMPRAS 1.0</h2>
-        
-        <div id="login-error" class="login-error"></div>
-        
-        <!-- Formulário de Login -->
-        <div id="form-login">
-            <input type="email" id="login-email" class="login-input" placeholder="📧 Seu e-mail" required>
-            <input type="password" id="login-senha" class="login-input" placeholder="🔒 Sua senha" required>
-            <button onclick="fazerLogin()" class="login-btn" id="btn-login">
-                ENTRAR
-            </button>
-            <div class="login-toggle">
-                Não tem conta? <a onclick="alternarCadastro()">Criar conta</a>
-            </div>
+<div id="authOverlay">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <h3 class="text-white"><i class="bi bi-shield-lock text-success"></i> ITVPlayer</h3>
+            <p class="text-secondary small">Credenciais para acessar o sistema</p>
         </div>
-        
-        <!-- Formulário de Cadastro -->
-        <div id="form-cadastro" class="hidden">
-            <input type="text" id="cad-nome" class="login-input" placeholder="👤 Seu nome" required>
-            <input type="email" id="cad-email" class="login-input" placeholder="📧 Seu e-mail" required>
-            <input type="password" id="cad-senha" class="login-input" placeholder="🔒 Crie uma senha (mín. 6 caracteres)" required minlength="6">
-            <input type="password" id="cad-confirmar" class="login-input" placeholder="🔐 Confirmar senha" required>
-            <button onclick="criarConta()" class="login-btn bg-verde" id="btn-cadastro">
-                CRIAR CONTA
-            </button>
-            <div class="login-toggle">
-                Já tem conta? <a onclick="alternarCadastro()">Fazer login</a>
+        <div id="formLogin">
+            <div class="mb-3">
+                <label class="form-label small text-secondary">E-mail</label>
+                <input type="email" id="loginEmail" class="form-control" placeholder="seu@email.com">
             </div>
+            <div class="mb-3">
+                <label class="form-label small text-secondary">Senha</label>
+                <input type="password" id="loginSenha" class="form-control" placeholder="******">
+            </div>
+            <button class="btn btn-success w-100 bg-lilas border-0 py-2" onclick="handleLogin()">Entrar no Sistema</button>
         </div>
-    </div></div>
-
-<div class="overlay" id="overlay" onclick="toggleCalc()"></div>
-<div id="calc-modal">
-    <div id="calc-display">0</div>
-    <div class="calc-grid">
-        <button class="btn-calc clear" onclick="clearCalc()">C</button>
-        <button class="btn-calc op" onclick="addCalc('/')">/</button>
-        <button class="btn-calc op" onclick="addCalc('*')">x</button>
-        <button class="btn-calc" onclick="addCalc('7')">7</button>
-        <button class="btn-calc" onclick="addCalc('8')">8</button>
-        <button class="btn-calc" onclick="addCalc('9')">9</button>
-        <button class="btn-calc op" onclick="addCalc('-')">-</button>
-        <button class="btn-calc" onclick="addCalc('4')">4</button>
-        <button class="btn-calc" onclick="addCalc('5')">5</button>
-        <button class="btn-calc" onclick="addCalc('6')">6</button>
-        <button class="btn-calc op" onclick="addCalc('+')">+</button>
-        <button class="btn-calc" onclick="addCalc('1')">1</button>
-        <button class="btn-calc" onclick="addCalc('2')">2</button>
-        <button class="btn-calc" onclick="addCalc('3')">3</button>
-        <button class="btn-calc" onclick="addCalc('.')">.</button>
-        <button class="btn-calc" onclick="addCalc('0')">0</button>
-        <button class="btn-calc igual" onclick="execCalc()">=</button>
     </div>
 </div>
 
-<div class="container" id="app-content" style="display: none;">
-    <!-- Info do usuário logado -->
-    <div class="user-info">
-        <span id="user-display">👤 Usuário</span>
-        <button onclick="fazerLogout()" class="btn-logout">SAIR</button>
-    </div>
-    
-    <button class="btn-calc-topo" onclick="toggleCalc()">🖩 CALCULADORA</button>
-    <h1>MINHAS COMPRAS 1.0</h1>
-
-    <div class="card-info">
-        <label>Saldo Alimentação (Mês):</label>
-        <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
-            <input type="number" id="saldo-alim" placeholder="R$ 0,00" style="flex:1; min-width: 100px;">
-            <button onclick="salvarAlimentacao()" id="btn-fixar" class="btn-small bg-verde">FIXAR ALIMENTAÇÃO</button>
-            <button onclick="editarAlimentacao()" id="btn-editar-alim" class="btn-small bg-laranja" style="display:none">EDITAR</button>
-        </div>
-        <p>Saldo Atual: <strong id="display-saldo">R$ 0,00</strong></p>
-    </div>
-
-    <div class="menu-topo">
-        <button class="btn-small bg-azul" onclick="showTab('cad')">+ COMPRA</button>
-        <button class="btn-small bg-verde" onclick="showTab('pago')">PAGO</button>
-        <button class="btn-small bg-vermelho" onclick="showTab('n-pago')">NÃO PAGO</button>        <select id="filtro-mes" onchange="renderList()" class="btn-small" style="background: #333; color: white;">
-            <option value="01">JAN</option><option value="02">FEV</option>
-            <option value="03">MAR</option><option value="04">ABR</option>
-            <option value="05">MAI</option><option value="06">JUN</option>
-            <option value="07">JUL</option><option value="08">AGO</option>
-            <option value="09">SET</option><option value="10">OUT</option>
-            <option value="11">NOV</option><option value="12">DEZ</option>
-        </select>
-    </div>
-
-    <div id="tab-cad" class="form-group">
-        <input type="text" id="nome-compra" placeholder="Nome do item">
-        <input type="number" id="valor-unit" placeholder="Valor Unitário R$" oninput="calcTotal()">
-        <div class="input-row">
-            <input type="number" id="qtd-compra" placeholder="Qtd" oninput="calcTotal()" style="flex: 2;">
-            <select id="unidade-compra" style="flex: 1;">
-                <option value="UN">UN</option>
-                <option value="CX">CX</option>
-                <option value="KG">KG</option>
-                <option value="ML">ML</option>
-                <option value="PC">PC</option>
-                <option value="LT">LT</option>
-            </select>
-        </div>
-        <p>Total: <strong id="total-preview">R$ 0,00</strong></p>
-        <button onclick="addCompra()" class="btn-small bg-azul">CADASTRAR COMPRA</button>
-    </div>
-
-    <div id="lista-compras"></div>
-    
-    <!-- Indicador de sincronização -->
-    <div id="sync-indicator" class="sync-status sync-pending">Sincronizando...</div>
+<div id="adminLock" style="display: none;">
+    <h2>🔒 Contato com ADM</h2>
+    <p>Acesso temporariamente bloqueado</p>
+    <button class="btn btn-success mb-3" onclick="window.open('https://wa.me/5585996498573')"><i class="bi bi-whatsapp"></i> WhatsApp ADM</button>
+    <input type="password" id="adminPass" class="form-control w-50 mb-2" placeholder="Senha mestre">
+    <button class="btn btn-primary" onclick="unlockApp()">Desbloquear</button>
 </div>
 
-<!-- Firebase SDK via CDN -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { 
-        getFirestore, 
-        doc, 
-        setDoc, 
-        getDoc, 
-        updateDoc, 
-        arrayUnion, 
-        arrayRemove,
-        onSnapshot,
-        enableIndexedDbPersistence
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { 
-        getAuth,         createUserWithEmailAndPassword, 
-        signInWithEmailAndPassword, 
-        signOut, 
-        onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-    // Configuração do Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyBxWPtsT6e6oCztD9JHZYMqvGd4CzzY5XA",
-        authDomain: "lista-de-compras-13f60.firebaseapp.com",
-        projectId: "lista-de-compras-13f60",
-        storageBucket: "lista-de-compras-13f60.firebasestorage.app",
-        messagingSenderId: "701417243300",
-        appId: "1:701417243300:web:ac56526f1096c64aa3dc31"
-    };
+<!-- MENU LATERAL REESTRUTURADO COM 3 BOTÕES -->
+<div id="mySidenav" class="menu-lateral">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="position:absolute; top:10px; right:20px; font-size:32px;">&times;</a>
     
-    // Inicializa Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    <div class="menu-btn-group">
+        <!-- 1° Botão - Conf Cobrança -->
+        <button class="menu-btn-principal" onclick="toggleMenuSecao('secCobranca', this)">
+            <i class="bi bi-chat-dots-fill"></i>
+            <span>Conf Cobrança</span>
+        </button>
+        <div class="menu-secao" id="secCobranca">
+            <h6>📢 Mensagem de Cobrança</h6>
+            <textarea id="cfgMsg" class="form-control mb-2" rows="3" placeholder="Digite a mensagem que será enviada..."></textarea>            <button class="btn btn-success w-100" onclick="saveSettings()">💾 Salvar Mensagem</button>
+        </div>
 
-    // Habilita persistência offline
-    enableIndexedDbPersistence(db).catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.log('Múltiplas abas abertas - persistência offline desativada');
-        } else if (err.code === 'unimplemented') {
-            console.log('Navegador não suporta persistência offline');
-        }
-    });
+        <!-- 2° Botão - Conf Painel -->
+        <button class="menu-btn-principal" onclick="toggleMenuSecao('secPaineis', this)">
+            <i class="bi bi-hdd-stack-fill"></i>
+            <span>Conf Painel</span>
+        </button>
+        <div class="menu-secao" id="secPaineis">
+            <h6>⚙️ Configuração dos Painéis</h6>
 
-    // Referências do documento no Firestore
-    const comprasRef = doc(db, "apps", "minhas-compras-1-0");
-    
-    // Variáveis globais
-    window.compras = [];
-    window.saldosMensais = {};
-    window.editIdx = null;
-    window.db = db;
-    window.auth = auth;
+            <!-- Painel CENTRAL -->
+            <div class="painel-config-card">
+                <div class="toggle-container">
+                    <h6 class="m-0"><i class="bi bi-broadcast text-info"></i> <span id="painel1Label">Painel 1 (CENTRAL)</span></h6>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePainel1" onchange="saveSettings()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <label class="small text-secondary">📝 Nome do Painel:</label>
+                <input type="text" id="nomePainel1" class="form-control mb-2" placeholder="Nome personalizado" onchange="saveSettings()">
+                <label class="small text-secondary">🔗 Link do Painel:</label>
+                <input type="text" id="url1" class="form-control mb-2" placeholder="https://...">
+                <label class="small text-secondary">💳 Quantidade de Créditos:</label>
+                <div class="creditos-display">
+                    <div>
+                        <div class="cred-label">Disponíveis</div>
+                        <div class="cred-value" id="credCentralDisplay">0</div>
+                    </div>
+                    <div class="creditos-controls">
+                        <button class="btn-menos" onclick="ajustarCredito('central', -1)">−</button>
+                        <input type="number" id="credCentral" class="form-control" value="0" min="0" onchange="atualizarDisplayCredito('central')">
+                        <button class="btn-mais" onclick="ajustarCredito('central', 1)">+</button>
+                    </div>
+                </div>
+            </div>
 
-    // === FUNÇÕES DE AUTENTICAÇÃO ===
-    
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.usuarioAtual = user;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-content').style.display = 'block';
-            document.getElementById('user-display').textContent = `👤 ${user.email}`;
+            <!-- Painel WAREZ -->
+            <div class="painel-config-card">
+                <div class="toggle-container">
+                    <h6 class="m-0"><i class="bi bi-lightning-fill text-warning"></i> <span id="painel2Label">Painel 2 (WAREZ)</span></h6>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePainel2" onchange="saveSettings()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <label class="small text-secondary">📝 Nome do Painel:</label>
+                <input type="text" id="nomePainel2" class="form-control mb-2" placeholder="Nome personalizado" onchange="saveSettings()">
+                <label class="small text-secondary">🔗 Link do Painel:</label>
+                <input type="text" id="url2" class="form-control mb-2" placeholder="https://...">
+                <label class="small text-secondary">💳 Quantidade de Créditos:</label>
+                <div class="creditos-display">
+                    <div>
+                        <div class="cred-label">Disponíveis</div>
+                        <div class="cred-value" id="credWarezDisplay">0</div>
+                    </div>
+                    <div class="creditos-controls">
+                        <button class="btn-menos" onclick="ajustarCredito('warez', -1)">−</button>
+                        <input type="number" id="credWarez" class="form-control" value="0" min="0" onchange="atualizarDisplayCredito('warez')">
+                        <button class="btn-mais" onclick="ajustarCredito('warez', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel ZEUS -->
+            <div class="painel-config-card">
+                <div class="toggle-container">
+                    <h6 class="m-0"><i class="bi bi-fire text-danger"></i> <span id="painel3Label">Painel 3 (ZEUS)</span></h6>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePainel3" onchange="saveSettings()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <label class="small text-secondary">📝 Nome do Painel:</label>
+                <input type="text" id="nomePainel3" class="form-control mb-2" placeholder="Nome personalizado" onchange="saveSettings()">
+                <label class="small text-secondary">🔗 Link do Painel:</label>
+                <input type="text" id="url3" class="form-control mb-2" placeholder="https://...">
+                <label class="small text-secondary">💳 Quantidade de Créditos:</label>
+                <div class="creditos-display">
+                    <div>
+                        <div class="cred-label">Disponíveis</div>
+                        <div class="cred-value" id="credZeusDisplay">0</div>
+                    </div>
+                    <div class="creditos-controls">
+                        <button class="btn-menos" onclick="ajustarCredito('zeus', -1)">−</button>
+                        <input type="number" id="credZeus" class="form-control" value="0" min="0" onchange="atualizarDisplayCredito('zeus')">
+                        <button class="btn-mais" onclick="ajustarCredito('zeus', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-success w-100 mt-2" onclick="saveSettings()">💾 Salvar Configurações</button>
+        </div>
+
+        <!-- 3° Botão - Sair -->
+        <button class="menu-btn-principal" onclick="handleLogout()" style="background: linear-gradient(135deg, #5a1a1a, #1a1a1a); border-color: #dc3545;">
+            <i class="bi bi-box-arrow-right" style="color: #dc3545;"></i>
+            <span>Sair</span>
+        </button>
+    </div>
+</div>
+
+<!-- NOVA NAVBAR FIXA NA PARTE INFERIOR -->
+<nav class="navbar">
+    <div class="navbar-inferior">
+        <div class="nav-left">
+            <button class="btn-menu-bottom" onclick="openNav()"><i class="bi bi-list"></i></button>
+        </div>
+        <div class="nav-center">
+            <button class="btn btn-add-fixo" onclick="showModalCadastro()"><i class="bi bi-plus-lg"></i></button>
+        </div>
+        <div class="nav-right">
+            <div class="navbar-brand-bottom text-end">
+                ITVPlayer
+                <small id="userEmailDisplay"></small>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-2">
+    <div id="adminPanel" class="mb-4 p-2">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h5 class="m-0"><i class="bi bi-cash-stack text-success"></i> Financeiro</h5>
+            <input type="date" id="filterMes" class="form-control w-auto bg-dark text-white border-secondary" style="max-width: 170px;">
+        </div>
+        <div class="row g-2">
+            <div class="col-6 col-md-3"><div class="card-financeiro"><div class="stat-label">Recebido (Mês)</div><div class="stat-val" id="finRecebido">R$ 0,00</div></div></div>
+            <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #ffc107;"><div class="stat-label">A Receber</div><div class="stat-val text-warning" id="finPendente">R$ 0,00</div></div></div>
+            <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #0dcaf0;"><div class="stat-label">Total Clientes</div><div class="stat-val text-info" id="finTotalClientes">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #00ff00;"><div class="stat-label">Lucro Geral</div><div class="stat-val" id="finGeral" style="color: #00ff00;">R$ 0,00</div></div></div>
+        </div>
+        <hr class="border-secondary">
+    </div>
+
+    <!-- NOVO: BOTÃO BANCO ITV ACIMA DA BUSCA -->
+    <button class="btn btn-success w-100 mb-3 rounded-pill fw-bold py-2" onclick="abrirBancoItv()" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
+        <i class="bi bi-bank2 me-2"></i> BANCO ITV - Gestão de Empréstimos
+    </button>
+
+    <input type="text" id="search" class="form-control mb-3" placeholder="🔍 Buscar cliente por nome..." onkeyup="renderClientes()">
+
+    <div class="nav-buttons-painel" id="paineisAtivos"></div>
+
+    <div class="filter-buttons">
+        <button class="btn-small bg-primary" onclick="filterData('ativos')">ATIVOS <span id="countAtivos">0</span></button>
+        <button class="btn-small" style="background-color: orange;" onclick="filterData('vencer')">A VENCER <span id="countVencer">0</span></button>
+        <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>        <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
+        <button class="btn-small bg-secondary" onclick="filterData('deletados')" style="display: none;">LIXO <span id="countDel">0</span></button>
+    </div>
+
+    <div id="listaClientes"></div>
+</div>
+
+<!-- Modal Cadastro/Edição -->
+<div class="modal fade" id="modalCadastro" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary"><h5 class="modal-title">📋 Cliente</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" id="editId">
+                <label class="small">Nome:</label><input type="text" id="cNome" class="form-control mb-2">
+                <label class="small">Usuário:</label><input type="text" id="cUser" class="form-control mb-2">
+                <label class="small">Senha:</label><input type="text" id="cPass" class="form-control mb-2">
+                <label class="small">Valor (R$):</label><input type="number" id="cValor" class="form-control mb-2" step="0.01">
+                <label class="small">Data Vencimento:</label><input type="date" id="cData" class="form-control mb-2">
+                <div style="display: none;">
+                    <label class="small">Servidor:</label><input type="text" id="cServ" class="form-control mb-2">
+                </div>
+                <label class="small">URL Playlist:</label><input type="text" id="cUrl" class="form-control mb-2">
+                <label class="small">WhatsApp (com DDD):</label><input type="tel" id="cTel" class="form-control mb-2" placeholder="55999999999">
+                <label class="small">Painel (onde será renovado):</label>
+                <select id="cPainel" class="form-control form-select mb-2">
+                    <option value="central">📡 CENTRAL</option>
+                    <option value="warez">⚡ WAREZ</option>
+                    <option value="zeus">🔥 ZEUS</option>                </select>
+                <label class="small">Observações:</label><textarea id="cObs" class="form-control mb-2" rows="2"></textarea>
+                <button class="btn btn-success w-100 mt-2 rounded-pill" onclick="saveCliente()">Salvar Cliente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Ações do Cliente (abre ao clicar no card) -->
+<div class="modal fade" id="modalAcoes" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <div>
+                    <h5 class="modal-title" id="acoesTitulo">👤 Cliente</h5>
+                    <small class="text-secondary" id="acoesSubtitulo"></small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="cliente-info mb-3" id="acoesInfoResumo"></div>
+                <hr class="border-secondary">
+                <div class="modal-acoes-grid" id="acoesGrid"></div>
+            </div>        </div>
+    </div>
+</div>
+
+<!-- ========================================================================
+     NOVO MODAL: BANCO ITV (Aplicativo de Empréstimos)
+     ======================================================================== -->
+<div class="modal fade modal-banco-itv" id="modalBancoItv" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="banco-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="m-0 fw-bold"><i class="bi bi-bank2 me-2"></i>BANCO ITV</h4>
+                    <small class="opacity-75">Gestão Profissional de Empréstimos</small>
+                </div>
+                <button type="button" class="btn btn-link text-white p-0" data-bs-dismiss="modal" style="font-size: 1.5rem;"><i class="bi bi-x-lg"></i></button>
+            </div>
             
-            if (typeof window.syncFromFirebase === 'function') {                window.syncFromFirebase();
-            }
-            if (typeof window.init === 'function') {
-                window.init();
-            }
-        } else {
-            window.usuarioAtual = null;
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app-content').style.display = 'none';
-            document.getElementById('form-cadastro').classList.add('hidden');
-            document.getElementById('form-login').classList.remove('hidden');
-        }
-    });
+            <div class="px-3 px-md-4">
+                <!-- Navegação Interna do App -->
+                <div class="banco-nav">
+                    <button class="banco-nav-btn active" onclick="mudarViewBanco('dashboard', this)"><i class="bi bi-pie-chart me-1"></i> Painel</button>
+                    <button class="banco-nav-btn" onclick="mudarViewBanco('lista', this)"><i class="bi bi-people me-1"></i> Clientes</button>
+                    <button class="banco-nav-btn" onclick="mudarViewBanco('novo', this)"><i class="bi bi-plus-circle me-1"></i> Novo</button>
+                </div>
 
-    window.criarConta = async function() {
-        const nome = document.getElementById('cad-nome').value.trim();
-        const email = document.getElementById('cad-email').value.trim();
-        const senha = document.getElementById('cad-senha').value;
-        const confirmar = document.getElementById('cad-confirmar').value;
-        const errorDiv = document.getElementById('login-error');
-        const btn = document.getElementById('btn-cadastro');
+                <!-- VIEW 1: DASHBOARD FINANCEIRO -->
+                <div id="view-dashboard" class="view-section active">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="fintech-card text-center">
+                                <div class="fintech-stat-label">Total Emprestado</div>
+                                <div class="fintech-stat-value text-info" id="bancoTotalEmprestado">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="fintech-card text-center">
+                                <div class="fintech-stat-label">Total Recebido</div>
+                                <div class="fintech-stat-value text-success" id="bancoTotalRecebido">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="fintech-card text-center">
+                                <div class="fintech-stat-label">A Receber</div>
+                                <div class="fintech-stat-value text-warning" id="bancoTotalPendente">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="fintech-card text-center">
+                                <div class="fintech-stat-label">Lucro (Juros)</div>
+                                <div class="fintech-stat-value" style="color: #9933ff;" id="bancoTotalLucro">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <h6 class="text-secondary mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Empréstimos Atrasados</h6>
+                    <div id="listaAtrasadosBanco"></div>
+                </div>
 
-        if (!nome || !email || !senha || !confirmar) {
-            errorDiv.textContent = '⚠ Preencha todos os campos!';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        if (senha.length < 6) {
-            errorDiv.textContent = '⚠ A senha deve ter pelo menos 6 caracteres!';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        if (senha !== confirmar) {
-            errorDiv.textContent = '⚠ As senhas não conferem!';
-            errorDiv.style.display = 'block';
-            return;
-        }
+                <!-- VIEW 2: LISTA DE CLIENTES -->
+                <div id="view-lista" class="view-section">
+                    <input type="text" id="searchBanco" class="form-control mb-3" placeholder="🔍 Buscar no Banco ITV..." onkeyup="renderizarListaBanco()">
+                    <div id="listaEmprestimosBanco"></div>
+                </div>
 
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="loading"></span> Criando...';
-        btn.disabled = true;
-        errorDiv.style.display = 'none';
+                <!-- VIEW 3: NOVO EMPRÉSTIMO -->
+                <div id="view-novo" class="view-section">
+                    <div class="fintech-card">
+                        <h5 class="mb-3"><i class="bi bi-file-earmark-plus me-2"></i>Cadastrar Novo Empréstimo</h5>
+                        <input type="hidden" id="bancoEditId">
+                        <label class="small text-secondary">Nome Completo:</label>
+                        <input type="text" id="bancoNome" class="form-control mb-2">
+                        
+                        <label class="small text-secondary">WhatsApp (com DDD):</label>
+                        <input type="tel" id="bancoTelefone" class="form-control mb-2" placeholder="55999999999">
+                        
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="small text-secondary">Valor Emprestado (R$):</label>
+                                <input type="number" id="bancoValor" class="form-control" step="0.01" oninput="calcularTotalBanco()">
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-secondary">Taxa de Juros (%):</label>
+                                <input type="number" id="bancoJuros" class="form-control" step="0.01" value="0" oninput="calcularTotalBanco()">
+                            </div>
+                        </div>
+                        
+                        <div class="fintech-card bg-dark border-primary mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-secondary">Valor Total a Receber:</span>
+                                <span class="fw-bold text-success" id="bancoValorTotalDisplay">R$ 0,00</span>
+                            </div>
+                        </div>
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-            await updateDoc(doc(db, "users", userCredential.user.uid), {
-                nome: nome,
-                email: email,
-                createdAt: new Date()
-            }, { merge: true });            
-            document.getElementById('cad-nome').value = '';
-            document.getElementById('cad-email').value = '';
-            document.getElementById('cad-senha').value = '';
-            document.getElementById('cad-confirmar').value = '';            
-        } catch (error) {
-            console.error("Erro ao criar conta:", error);
-            let mensagem = '⚠ Erro ao criar conta. ';
-            if (error.code === 'auth/email-already-in-use') mensagem += 'E-mail já cadastrado!';
-            else if (error.code === 'auth/invalid-email') mensagem += 'E-mail inválido!';
-            else if (error.code === 'auth/weak-password') mensagem += 'Senha muito fraca!';
-            else mensagem += 'Tente novamente.';
-            errorDiv.textContent = mensagem;
-            errorDiv.style.display = 'block';
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    };
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="small text-secondary">Nº de Parcelas:</label>
+                                <input type="number" id="bancoParcelas" class="form-control" value="1" min="1" oninput="calcularTotalBanco()">
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-secondary">Data 1º Vencimento:</label>
+                                <input type="date" id="bancoDataVenc" class="form-control">
+                            </div>
+                        </div>
 
-    window.fazerLogin = async function() {
-        const email = document.getElementById('login-email').value.trim();
-        const senha = document.getElementById('login-senha').value;
-        const errorDiv = document.getElementById('login-error');
-        const btn = document.getElementById('btn-login');
+                        <label class="small text-secondary">Observações:</label>
+                        <textarea id="bancoObs" class="form-control mb-3" rows="2"></textarea>
 
-        if (!email || !senha) {
-            errorDiv.textContent = '⚠ Preencha e-mail e senha!';
-            errorDiv.style.display = 'block';
-            return;
-        }
+                        <button class="btn btn-primary w-100 py-2 fw-bold rounded-pill" onclick="salvarEmprestimo()">
+                            <i class="bi bi-check-circle me-2"></i>Salvar Empréstimo
+                        </button>
+                    </div>
+                </div>
 
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="loading"></span> Entrando...';
-        btn.disabled = true;
-        errorDiv.style.display = 'none';
+            </div>
+        </div>
+    </div>
+</div>
 
-        try {
-            await signInWithEmailAndPassword(auth, email, senha);
-        } catch (error) {
-            console.error("Erro ao fazer login:", error);
-            let mensagem = '⚠ Erro ao entrar. ';
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                mensagem += 'E-mail ou senha incorretos!';
-            } else if (error.code === 'auth/invalid-email') {
-                mensagem += 'E-mail inválido!';
-            } else {
-                mensagem += 'Tente novamente.';
-            }
-            errorDiv.textContent = mensagem;            errorDiv.style.display = 'block';
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    };
-
-    window.fazerLogout = async function() {
-        if (confirm('Deseja realmente sair da conta?')) {
-            try {
-                await signOut(auth);
-                window.compras = [];
-                window.saldosMensais = {};
-            } catch (error) {
-                console.error("Erro ao fazer logout:", error);
-                alert('Erro ao sair. Tente novamente.');
-            }
-        }
-    };
-
-    window.alternarCadastro = function() {
-        const formLogin = document.getElementById('form-login');
-        const formCadastro = document.getElementById('form-cadastro');
-        const errorDiv = document.getElementById('login-error');
-        
-        formLogin.classList.toggle('hidden');
-        formCadastro.classList.toggle('hidden');
-        errorDiv.style.display = 'none';
-        
-        document.getElementById('login-email').value = '';
-        document.getElementById('login-senha').value = '';
-        document.getElementById('cad-nome').value = '';
-        document.getElementById('cad-email').value = '';
-        document.getElementById('cad-senha').value = '';
-        document.getElementById('cad-confirmar').value = '';
-    };
-
-    // === FUNÇÕES DE SINCRONIZAÇÃO COM FIREBASE ===
-    
-    function syncFromFirebase() {
-        if (!auth.currentUser) return;
-        
-        const userComprasRef = doc(db, "users", auth.currentUser.uid, "compras", "lista");
-        
-        onSnapshot(userComprasRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                window.compras = data.compras || [];
-                window.saldosMensais = data.saldosMensais || {};
-                                if (typeof window.renderList === 'function') {
-                    window.renderList();
-                }
-                updateSyncStatus('ok');
-            } else {
-                saveToFirebase();
-            }
-        }, (error) => {
-            console.error("Erro ao sincronizar:", error);
-            updateSyncStatus('error');
-            loadFromLocalStorage();
-        });
-    }
-
-    async function saveToFirebase() {
-        if (!auth.currentUser) return;
-        
-        try {
-            updateSyncStatus('pending');
-            const userComprasRef = doc(db, "users", auth.currentUser.uid, "compras", "lista");
-            
-            await setDoc(userComprasRef, {
-                compras: window.compras,
-                saldosMensais: window.saldosMensais,
-                updatedAt: new Date()
-            }, { merge: true });
-            updateSyncStatus('ok');
-            saveToLocalStorage();
-        } catch (error) {
-            console.error("Erro ao salvar no Firebase:", error);
-            updateSyncStatus('error');
-            saveToLocalStorage();
-        }
-    }
-
-    // === FALLBACK PARA LOCALSTORAGE ===
-    
-    function saveToLocalStorage() {
-        try {
-            if (auth.currentUser) {
-                localStorage.setItem('compras_' + auth.currentUser.uid, JSON.stringify(window.compras));
-                localStorage.setItem('saldosMensais_' + auth.currentUser.uid, JSON.stringify(window.saldosMensais));
-            }
-        } catch(e) {
-            console.warn("Não foi possível salvar no localStorage");
-        }
-    }
-
-    function loadFromLocalStorage() {
-        try {            if (auth.currentUser) {
-                const comprasLocal = localStorage.getItem('compras_' + auth.currentUser.uid);
-                const saldosLocal = localStorage.getItem('saldosMensais_' + auth.currentUser.uid);
-                if (comprasLocal) window.compras = JSON.parse(comprasLocal);
-                if (saldosLocal) window.saldosMensais = JSON.parse(saldosLocal);
-                if (typeof window.renderList === 'function') {
-                    window.renderList();
-                }
-            }
-        } catch(e) {
-            console.warn("Não foi possível carregar do localStorage");
-        }
-    }
-
-    // === UTILITÁRIOS DE UI ===
-    
-    function updateSyncStatus(status) {
-        const indicator = document.getElementById('sync-indicator');
-        if (!indicator) return;
-        
-        indicator.className = `sync-status sync-${status}`;
-        const messages = {
-            'ok': '✓ Sincronizado',
-            'error': '⚠ Offline',
-            'pending': '↻ Sincronizando...'
-        };
-        indicator.textContent = messages[status] || status;
-        
-        if (status === 'ok') {
-            setTimeout(() => {
-                if (indicator.classList.contains('sync-ok')) {
-                    indicator.style.opacity = '0.3';
-                }
-            }, 3000);
-        }
-    }
-
-    window.syncFromFirebase = syncFromFirebase;
-    window.saveToFirebase = saveToFirebase;
-    window.updateSyncStatus = updateSyncStatus;
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
 <script>
-    // === CÓDIGO ORIGINAL COM ADAPTAÇÕES MÍNIMAS ===
-    
-    let editIdx = null;
+    const firebaseConfig = {
+      apiKey: "AIzaSyDd_rtYsto9_0zp8pxYwXRs4XRRip7k3uc",
+      authDomain: "itvcontrol.firebaseapp.com",      projectId: "itvcontrol",
+      storageBucket: "itvcontrol.firebasestorage.app",
+      messagingSenderId: "291731890067",
+      appId: "1:291731890067:web:e75e79766765d861db5266"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // Funções da Calculadora
-    let calcExpressao = "";
-    function toggleCalc() {        const modal = document.getElementById('calc-modal');
-        const overlay = document.getElementById('overlay');
-        const isVisible = modal.style.display === 'block';
-        modal.style.display = isVisible ? 'none' : 'block';
-        overlay.style.display = isVisible ? 'none' : 'block';
+    let clientes = [];
+    let config = { 
+        msg: "", 
+        p1: "", p2: "", p3: "", 
+        credCentral: 0, credWarez: 0, credZeus: 0,
+        nomePainel1: "CENTRAL",
+        nomePainel2: "WAREZ",
+        nomePainel3: "ZEUS",
+        togglePainel1: true,
+        togglePainel2: true,
+        togglePainel3: true
+    };
+    let currentFilter = 'ativos';
+    let usuarioLogadoUid = null;
+
+    // =========================================================================
+    // VARIÁVEIS E FUNÇÕES DO BANCO ITV
+    // =========================================================================
+    let emprestimos = [];
+
+    function abrirBancoItv() {
+        new bootstrap.Modal(document.getElementById('modalBancoItv')).show();
+        carregarDadosBanco();
     }
 
-    function addCalc(val) {
-        calcExpressao += val;
-        document.getElementById('calc-display').innerText = calcExpressao;
+    function mudarViewBanco(view, btn) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.banco-nav-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-' + view).classList.add('active');
+        if(btn) btn.classList.add('active');
+        if(view === 'lista') renderizarListaBanco();
     }
 
-    function clearCalc() {
-        calcExpressao = "";
-        document.getElementById('calc-display').innerText = "0";
+    function calcularTotalBanco() {
+        const valor = parseFloat(document.getElementById('bancoValor').value) || 0;
+        const juros = parseFloat(document.getElementById('bancoJuros').value) || 0;
+        const total = valor + (valor * (juros / 100));
+        document.getElementById('bancoValorTotalDisplay').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    function execCalc() {
-        try {
-            calcExpressao = eval(calcExpressao).toString();
-            document.getElementById('calc-display').innerText = calcExpressao;
-        } catch {
-            document.getElementById('calc-display').innerText = "Erro";
-            calcExpressao = "";
-        }
-    }
-
-    function init() {
-        // ✅ REMOVIDO: checkLock() - bloqueio de 4 contas e senha ADM
-        if (window.compras && window.compras.length > 0) {
-            renderList();
-        }
-    }
-
-    // ✅ FUNÇÃO checkLock REMOVIDA - sem limite de contas
-    // ✅ FUNÇÃO unlockApp REMOVIDA - sem senha de administrador
-
-    function calcTotal() {
-        const v = parseFloat(document.getElementById('valor-unit').value) || 0;
-        const q = parseFloat(document.getElementById('qtd-compra').value) || 0;
-        document.getElementById('total-preview').innerText = `R$ ${(v * q).toFixed(2)}`;
-    }
-
-    function addCompra() {
-        if (!window.auth || !window.auth.currentUser) {
-            alert('Você precisa estar logado para cadastrar compras!');
-            return;
-        }
-        
-        const nome = document.getElementById('nome-compra').value;        const valor = parseFloat(document.getElementById('valor-unit').value);
-        const qtd = parseFloat(document.getElementById('qtd-compra').value);
-        const unidade = document.getElementById('unidade-compra').value;
-        const mes = document.getElementById('filtro-mes').value;
-
-        if(!nome || isNaN(valor) || isNaN(qtd)) return alert("Preencha os dados corretamente!");
-
-        const novaCompra = {
-            nome, valor, qtd, unidade, total: valor * qtd, 
-            pago: false, mes: mes, id: Date.now()
-        };
-
-        if(editIdx !== null) {
-            window.compras[editIdx] = novaCompra;
-            editIdx = null;
-        } else {
-            window.compras.push(novaCompra);
-        }
-
-        saveData();
-        clearForm();
-        renderList();
-        // ✅ REMOVIDO: checkLock() após adicionar compra
-    }
-
-    function pagarCompra(id) {
-        if (!window.auth || !window.auth.currentUser) {
-            alert('Você precisa estar logado para realizar esta ação!');
-            return;
-        }
-        
-        const idx = window.compras.findIndex(c => c.id === id);
-        if (idx === -1) return;
-        
-        const mesAtual = window.compras[idx].mes;
-        
-        window.compras[idx].pago = true;        
-        if(window.saldosMensais[mesAtual] !== undefined) {
-            window.saldosMensais[mesAtual] -= window.compras[idx].total;
-        }
-        
-        let proxMesNum = parseInt(mesAtual) + 1;
-        let proxMes = proxMesNum > 12 ? "01" : proxMesNum.toString().padStart(2, '0');
-        
-        const recorrente = {...window.compras[idx], id: Date.now() + 1, pago: false, mes: proxMes};
-        window.compras.push(recorrente);
-
-        saveData();
-        renderList();
-    }
-    function deletarCompra(id) {
-        if (!window.auth || !window.auth.currentUser) {
-            alert('Você precisa estar logado para realizar esta ação!');
-            return;
-        }
-        
-        window.compras = window.compras.filter(c => c.id !== id);
-        saveData();
-        renderList();
-    }
-
-    function editCompra(id) {
-        if (!window.auth || !window.auth.currentUser) {
-            alert('Você precisa estar logado para realizar esta ação!');
-            return;
-        }
-        
-        const item = window.compras.find(c => c.id === id);
-        if (!item) return;
-        
-        document.getElementById('nome-compra').value = item.nome;
-        document.getElementById('valor-unit').value = item.valor;
-        document.getElementById('qtd-compra').value = item.qtd;
-        document.getElementById('unidade-compra').value = item.unidade || 'UN';
-        editIdx = window.compras.findIndex(c => c.id === id);
-        calcTotal();
-        window.scrollTo(0,0);
-    }
-    
-    function salvarAlimentacao() {
-        if (!window.auth || !window.auth.currentUser) {
-            alert('Você precisa estar logado para realizar esta ação!');
-            return;
-        }
-        
-        const mes = document.getElementById('filtro-mes').value;
-        const valor = parseFloat(document.getElementById('saldo-alim').value) || 0;
-        
-        window.saldosMensais[mes] = valor;
-        
-        document.getElementById('saldo-alim').disabled = true;
-        document.getElementById('btn-fixar').style.display = 'none';
-        document.getElementById('btn-editar-alim').style.display = 'block';
-        
-        saveData();
-        renderList();
-    }
-
-    function editarAlimentacao() {        document.getElementById('saldo-alim').disabled = false;
-        document.getElementById('btn-fixar').style.display = 'block';
-        document.getElementById('btn-editar-alim').style.display = 'none';
-    }
-
-    function saveData() {
-        if (window.saveToFirebase) {
-            window.saveToFirebase();
-        } else {
-            localStorage.setItem('compras', JSON.stringify(window.compras));
-            localStorage.setItem('saldosMensais', JSON.stringify(window.saldosMensais));
-        }
-    }
-
-    function renderList(filtro = 'todos') {
-        const lista = document.getElementById('lista-compras');
-        const mesAtual = document.getElementById('filtro-mes').value;
-        lista.innerHTML = "";
-
-        const saldoDoMes = window.saldosMensais[mesAtual] || 0;
-        document.getElementById('display-saldo').innerText = `R$ ${parseFloat(saldoDoMes).toFixed(2)}`;
-        
-        if(window.saldosMensais[mesAtual] !== undefined) {
-            document.getElementById('saldo-alim').value = window.saldosMensais[mesAtual].toFixed(2);
-            document.getElementById('saldo-alim').disabled = true;
-            document.getElementById('btn-fixar').style.display = 'none';
-            document.getElementById('btn-editar-alim').style.display = 'block';
-        } else {
-            document.getElementById('saldo-alim').value = "";
-            document.getElementById('saldo-alim').disabled = false;
-            document.getElementById('btn-fixar').style.display = 'block';
-            document.getElementById('btn-editar-alim').style.display = 'none';
-        }
-
-        (window.compras || []).filter(c => c.mes === mesAtual).forEach(item => {
-            if(filtro === 'pago' && !item.pago) return;
-            if(filtro === 'n-pago' && item.pago) return;
-
-            const div = document.createElement('div');
-            div.className = `item-compra ${item.pago ? 'pago' : 'pendente'}`;
-            div.innerHTML = `
-                <strong>${item.nome}</strong><br>
-                Qtd: ${item.qtd} ${item.unidade || 'UN'} | Total: R$ ${item.total.toFixed(2)} <br>
-                Status: ${item.pago ? '<span style="color:green">PAGO</span>' : '<span style="color:red">NÃO PAGO</span>'}
-                <div style="margin-top:10px; display:flex; gap:5px">
-                    ${!item.pago ? `<button onclick="pagarCompra(${item.id})" class="btn-small bg-verde">PAGAR</button>` : ''}
-                    <button onclick="editCompra(${item.id})" class="btn-small bg-lilas">EDITAR</button>
-                    <button onclick="deletarCompra(${item.id})" class="btn-small bg-vermelho">EXCLUIR</button>
-                </div>
-            `;            lista.appendChild(div);
+    function carregarDadosBanco() {
+        if(!usuarioLogadoUid) return;
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").onSnapshot(snapshot => {
+            emprestimos = [];
+            snapshot.forEach(doc => { emprestimos.push({ id: doc.id, ...doc.data() }); });
+            renderizarDashboardBanco();
+            renderizarListaBanco();
         });
     }
 
-    function showTab(type) {
-        if(type === 'pago') renderList('pago');
-        else if(type === 'n-pago') renderList('n-pago');
-        else renderList('todos');
+    function salvarEmprestimo() {
+        if(!usuarioLogadoUid) return;
+        const id = document.getElementById('bancoEditId').value;
+        const valor = parseFloat(document.getElementById('bancoValor').value) || 0;
+        const juros = parseFloat(document.getElementById('bancoJuros').value) || 0;
+        const valorTotal = valor + (valor * (juros / 100));
+        const parcelas = parseInt(document.getElementById('bancoParcelas').value) || 1;
+
+        const dados = {
+            nome: document.getElementById('bancoNome').value,
+            telefone: document.getElementById('bancoTelefone').value,
+            valorEmprestado: valor,
+            taxaJuros: juros,
+            valorTotal: valorTotal,
+            parcelas: parcelas,
+            parcelasPagas: id ? (emprestimos.find(e => e.id === id)?.parcelasPagas || 0) : 0,
+            dataVencimento: document.getElementById('bancoDataVenc').value,
+            obs: document.getElementById('bancoObs').value,
+            status: 'ativo',
+            dataCriacao: new Date().toISOString()
+        };
+
+        const modalEl = document.getElementById('modalBancoItv');
+        
+        if(id === "") {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").add(dados).then(() => {
+                limparFormBanco();
+                alert("✅ Empréstimo cadastrado com sucesso!");
+                mudarViewBanco('lista', document.querySelectorAll('.banco-nav-btn')[1]);
+            });
+        } else {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").doc(id).update(dados).then(() => {
+                limparFormBanco();
+                alert("✅ Empréstimo atualizado!");
+                mudarViewBanco('lista', document.querySelectorAll('.banco-nav-btn')[1]);
+            });
+        }
     }
 
-    function clearForm() {
-        document.getElementById('nome-compra').value = "";
-        document.getElementById('valor-unit').value = "";
-        document.getElementById('qtd-compra').value = "";
-        document.getElementById('unidade-compra').value = "UN";
-        document.getElementById('total-preview').innerText = "R$ 0,00";
+    function limparFormBanco() {
+        document.getElementById('bancoEditId').value = "";
+        document.getElementById('bancoNome').value = "";
+        document.getElementById('bancoTelefone').value = "";
+        document.getElementById('bancoValor').value = "";
+        document.getElementById('bancoJuros').value = "0";
+        document.getElementById('bancoParcelas').value = "1";
+        document.getElementById('bancoDataVenc').value = "";
+        document.getElementById('bancoObs').value = "";
+        document.getElementById('bancoValorTotalDisplay').innerText = "R$ 0,00";
     }
 
-    // Inicializa app via onAuthStateChanged
+    function renderizarDashboardBanco() {
+        let totalEmprestado = 0, totalRecebido = 0, totalPendente = 0, totalLucro = 0;
+        let atrasadosHtml = '';
+
+        const hoje = new Date();
+
+        emprestimos.forEach(e => {
+            if(e.status !== 'pago') {
+                totalEmprestado += e.valorEmprestado;
+                totalLucro += (e.valorTotal - e.valorEmprestado);
+                
+                const valorPago = (e.valorTotal / e.parcelas) * e.parcelasPagas;
+                totalRecebido += valorPago;
+                totalPendente += (e.valorTotal - valorPago);
+
+                // Verificar atraso
+                let partes = e.dataVencimento.split('-');
+                let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+                // Adicionar dias baseados nas parcelas pagas (simplificado)
+                dataVenc.setMonth(dataVenc.getMonth() + e.parcelasPagas);
+                
+                if(dataVenc < hoje && e.parcelasPagas < e.parcelas) {
+                    atrasadosHtml += `
+                        <div class="emprestimo-item border-danger">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="m-0 text-white">${e.nome}</h6>
+                                <span class="status-badge status-atrasado">ATRASADO</span>
+                            </div>
+                            <div class="small text-secondary mb-2">Vencimento: ${formatarDataBR(e.dataVencimento)} | Parcela: ${e.parcelasPagas + 1}/${e.parcelas}</div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-success flex-fill" onclick="pagarParcelaBanco('${e.id}')"><i class="bi bi-cash"></i> Receber</button>
+                                <button class="btn btn-sm btn-outline-light flex-fill" onclick="cobrarWhatsAppBanco('${e.id}')"><i class="bi bi-whatsapp"></i> Cobrar</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        document.getElementById('bancoTotalEmprestado').innerText = totalEmprestado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('bancoTotalRecebido').innerText = totalRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('bancoTotalPendente').innerText = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('bancoTotalLucro').innerText = totalLucro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        document.getElementById('listaAtrasadosBanco').innerHTML = atrasadosHtml || '<div class="text-center text-secondary py-3">Nenhum empréstimo atrasado. 🎉</div>';
+    }
+
+    function renderizarListaBanco() {
+        const search = document.getElementById('searchBanco').value.toLowerCase();
+        const container = document.getElementById('listaEmprestimosBanco');
+        container.innerHTML = '';
+
+        emprestimos.filter(e => e.nome.toLowerCase().includes(search)).forEach(e => {
+            const valorParcela = e.valorTotal / e.parcelas;
+            const pendente = e.valorTotal - (valorParcela * e.parcelasPagas);
+            let statusClass = 'status-ativo';
+            let statusText = 'ATIVO';
+            
+            if(e.status === 'pago') { statusClass = 'status-pago'; statusText = 'PAGO'; }
+            else {
+                let partes = e.dataVencimento.split('-');
+                let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+                dataVenc.setMonth(dataVenc.getMonth() + e.parcelasPagas);
+                if(dataVenc < new Date()) { statusClass = 'status-atrasado'; statusText = 'ATRASADO'; }
+            }
+
+            container.innerHTML += `
+                <div class="emprestimo-item" onclick="editarEmprestimo('${e.id}')">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="m-0 text-white fw-bold">${e.nome}</h6>
+                            <small class="text-secondary"><i class="bi bi-telephone me-1"></i>${e.telefone || 'Sem telefone'}</small>
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="row g-1 mb-3 small">
+                        <div class="col-6 text-secondary">Total: <span class="text-white">${e.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+                        <div class="col-6 text-secondary">Parcelas: <span class="text-white">${e.parcelasPagas}/${e.parcelas}</span></div>
+                        <div class="col-12 text-secondary">Pendente: <span class="text-warning fw-bold">${pendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+                    </div>
+                    <div class="d-flex gap-2" onclick="event.stopPropagation()">
+                        ${e.status !== 'pago' ? `<button class="btn btn-sm btn-success flex-fill" onclick="pagarParcelaBanco('${e.id}')"><i class="bi bi-cash-coin"></i> Pagar Parcela</button>` : ''}
+                        <button class="btn btn-sm btn-outline-success flex-fill" onclick="cobrarWhatsAppBanco('${e.id}')"><i class="bi bi-whatsapp"></i> ZAP</button>
+                        <button class="btn btn-sm btn-danger flex-fill" onclick="excluirEmprestimo('${e.id}')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function editarEmprestimo(id) {
+        const e = emprestimos.find(x => x.id === id);
+        if(!e) return;
+        document.getElementById('bancoEditId').value = e.id;
+        document.getElementById('bancoNome').value = e.nome;
+        document.getElementById('bancoTelefone').value = e.telefone;
+        document.getElementById('bancoValor').value = e.valorEmprestado;
+        document.getElementById('bancoJuros').value = e.taxaJuros;
+        document.getElementById('bancoParcelas').value = e.parcelas;
+        document.getElementById('bancoDataVenc').value = e.dataVencimento;
+        document.getElementById('bancoObs').value = e.obs || '';
+        calcularTotalBanco();
+        mudarViewBanco('novo', document.querySelectorAll('.banco-nav-btn')[2]);
+    }
+
+    function pagarParcelaBanco(id) {
+        const e = emprestimos.find(x => x.id === id);
+        if(!e) return;
+        if(e.parcelasPagas >= e.parcelas) return alert("Este empréstimo já está quitado!");
+
+        if(confirm(`Confirmar recebimento da parcela ${e.parcelasPagas + 1} de ${e.nome}?`)) {
+            const novasParcelasPagas = e.parcelasPagas + 1;
+            const novoStatus = novasParcelasPagas >= e.parcelas ? 'pago' : 'ativo';
+            
+            // Calcular nova data de vencimento para a próxima parcela
+            let partes = e.dataVencimento.split('-');
+            let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+            dataVenc.setMonth(dataVenc.getMonth() + novasParcelasPagas);
+            const novaDataVencISO = `${dataVenc.getFullYear()}-${String(dataVenc.getMonth() + 1).padStart(2, '0')}-${String(dataVenc.getDate()).padStart(2, '0')}`;
+
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").doc(id).update({
+                parcelasPagas: novasParcelasPagas,
+                status: novoStatus,
+                dataVencimento: novaDataVencISO,
+                ultimoPagamento: new Date().toISOString()
+            }).then(() => {
+                // Enviar comprovante opcional
+                if(e.telefone && confirm("Deseja enviar comprovante de pagamento no WhatsApp?")) {
+                    const msg = `✅ *BANCO ITV* - Comprovante de Pagamento\n\nOlá ${e.nome}, recebemos sua parcela nº ${novasParcelasPagas} no valor de ${(e.valorTotal/e.parcelas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\n${novoStatus === 'pago' ? '🎉 Parabéns! Seu empréstimo está QUITADO!' : `Próximo vencimento: ${formatarDataBR(novaDataVencISO)}`}`;
+                    window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+                }
+                alert("✅ Parcela registrada com sucesso!");
+            });
+        }
+    }
+
+    function cobrarWhatsAppBanco(id) {
+        const e = emprestimos.find(x => x.id === id);
+        if(!e) return alert("Cliente não encontrado!");
+        if(!e.telefone) return alert("Telefone não cadastrado!");
+        
+        const valorParcela = e.valorTotal / e.parcelas;
+        const msg = `🏦 *BANCO ITV* - Aviso de Cobrança\n\nOlá ${e.nome}, sua parcela nº ${e.parcelasPagas + 1} no valor de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} está vencida.\nData de vencimento: ${formatarDataBR(e.dataVencimento)}.\n\nPor favor, regularize para evitar juros adicionais.`;
+        window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+    }
+
+    function excluirEmprestimo(id) {
+        if(confirm("Tem certeza que deseja excluir este empréstimo permanentemente?")) {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").doc(id).delete();
+        }
+    }
+
+    // =========================================================================
+    // FIM DAS FUNÇÕES DO BANCO ITV
+    // =========================================================================
+
+    const hojeLocal = new Date();
+    const anoLocal = hojeLocal.getFullYear();
+    const mesLocal = String(hojeLocal.getMonth() + 1).padStart(2, '0');
+    const diaLocal = String(hojeLocal.getDate()).padStart(2, '0');
+    document.getElementById('filterMes').value = `${anoLocal}-${mesLocal}-${diaLocal}`;
+    
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            usuarioLogadoUid = user.uid;
+            document.getElementById('userEmailDisplay').innerText = user.email || "";
+            document.getElementById('authOverlay').style.display = 'none';
+            syncConfigAndClients();
+        } else {
+            usuarioLogadoUid = null;
+            document.getElementById('userEmailDisplay').innerText = "";
+            document.getElementById('authOverlay').style.display = 'flex';
+            document.getElementById('adminLock').style.display = 'none';
+        }
+    });
+
+    function handleLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const senha = document.getElementById('loginSenha').value.trim();
+        if(!email || !senha) return alert("Preencha e-mail e senha.");
+        auth.signInWithEmailAndPassword(email, senha).catch(err => alert("Erro: " + err.message));
+    }
+    function handleLogout() { auth.signOut().then(() => closeNav()); }
+    function openNav() { document.getElementById("mySidenav").style.width = "300px"; }
+    function closeNav() {
+        document.getElementById("mySidenav").style.width = "0";
+        document.querySelectorAll('.menu-secao').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.menu-btn-principal').forEach(b => b.classList.remove('active'));
+    }
+    function unlockApp() { document.getElementById('adminLock').style.display = 'none'; }
+
+    function toggleMenuSecao(idSecao, btn) {
+        const secao = document.getElementById(idSecao);
+        const estaAberta = secao.classList.contains('active');
+        document.querySelectorAll('.menu-secao').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.menu-btn-principal').forEach(b => b.classList.remove('active'));
+        if (!estaAberta) {
+            secao.classList.add('active');
+            btn.classList.add('active');
+        }
+    }
+
+    function ajustarCredito(painel, delta) {
+        const inputId = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
+        const input = document.getElementById(inputId);        let val = parseInt(input.value) || 0;
+        val = Math.max(0, val + delta);
+        input.value = val;
+        atualizarDisplayCredito(painel);
+    }
+    function atualizarDisplayCredito(painel) {
+        const inputId = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
+        const displayId = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1) + 'Display';
+        const val = parseInt(document.getElementById(inputId).value) || 0;
+        document.getElementById(displayId).innerText = val;
+    }
+    function atualizarBadgesCreditos() {
+        document.getElementById('credCentralDisplay').innerText = config.credCentral || 0;
+        document.getElementById('credWarezDisplay').innerText = config.credWarez || 0;
+        document.getElementById('credZeusDisplay').innerText = config.credZeus || 0;
+    }
+
+    function consumirCredito(painel) {
+        const chave = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
+        const atual = parseInt(config[chave]) || 0;
+        if (atual <= 0) {
+            alert(`⚠️ Sem créditos no Painel ${painel.toUpperCase()}! Adicione créditos no menu "Conf Painel".`);
+            return false;
+        }
+        config[chave] = atual - 1;
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral")
+          .update({ [chave]: config[chave] })
+          .catch(e => console.error("Erro ao atualizar crédito:", e));
+        atualizarBadgesCreditos();
+        const inputId = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
+        const input = document.getElementById(inputId);
+        if (input) input.value = config[chave];
+        return true;
+    }
+    
+    function syncConfigAndClients() {
+        if(!usuarioLogadoUid) return;
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral").onSnapshot(doc => {
+            if(doc.exists) {
+                config = doc.data();
+                config.msg = config.msg || "";
+                config.p1 = config.p1 || "";
+                config.p2 = config.p2 || "";
+                config.p3 = config.p3 || "";                
+                config.credCentral = parseInt(config.credCentral) || 0;
+                config.credWarez = parseInt(config.credWarez) || 0;
+                config.credZeus = parseInt(config.credZeus) || 0;
+                config.nomePainel1 = config.nomePainel1 || "CENTRAL";
+                config.nomePainel2 = config.nomePainel2 || "WAREZ";
+                config.nomePainel3 = config.nomePainel3 || "ZEUS";
+                config.togglePainel1 = config.togglePainel1 !== undefined ? config.togglePainel1 : true;
+                config.togglePainel2 = config.togglePainel2 !== undefined ? config.togglePainel2 : true;
+                config.togglePainel3 = config.togglePainel3 !== undefined ? config.togglePainel3 : true;
+            } else {
+                config = { 
+                    msg: "", p1: "", p2: "", p3: "", 
+                    credCentral: 0, credWarez: 0, credZeus: 0,
+                    nomePainel1: "CENTRAL", nomePainel2: "WAREZ", nomePainel3: "ZEUS",
+                    togglePainel1: true, togglePainel2: true, togglePainel3: true
+                };
+            }
+            document.getElementById('cfgMsg').value = config.msg || "";
+            document.getElementById('url1').value = config.p1 || "";
+            document.getElementById('url2').value = config.p2 || "";
+            document.getElementById('url3').value = config.p3 || "";
+            document.getElementById('credCentral').value = config.credCentral;
+            document.getElementById('credWarez').value = config.credWarez;
+            document.getElementById('credZeus').value = config.credZeus;
+            document.getElementById('nomePainel1').value = config.nomePainel1;
+            document.getElementById('nomePainel2').value = config.nomePainel2;
+            document.getElementById('nomePainel3').value = config.nomePainel3;
+            document.getElementById('togglePainel1').checked = config.togglePainel1;
+            document.getElementById('togglePainel2').checked = config.togglePainel2;
+            document.getElementById('togglePainel3').checked = config.togglePainel3;
+            document.getElementById('painel1Label').innerText = `Painel 1 (${config.nomePainel1})`;
+            document.getElementById('painel2Label').innerText = `Painel 2 (${config.nomePainel2})`;
+            document.getElementById('painel3Label').innerText = `Painel 3 (${config.nomePainel3})`;
+            atualizarBadgesCreditos();
+            renderPaineisAtivos();
+        });        
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").onSnapshot(snapshot => {
+            clientes = [];
+            snapshot.forEach(doc => { clientes.push({ id: doc.id, ...doc.data() }); });
+            renderClientes();
+        });
+    }
+
+    function saveSettings() {
+        if(!usuarioLogadoUid) return;
+        config = {
+            msg: document.getElementById('cfgMsg').value,
+            p1: document.getElementById('url1').value,
+            p2: document.getElementById('url2').value,
+            p3: document.getElementById('url3').value,
+            credCentral: parseInt(document.getElementById('credCentral').value) || 0,
+            credWarez: parseInt(document.getElementById('credWarez').value) || 0,
+            credZeus: parseInt(document.getElementById('credZeus').value) || 0,
+            nomePainel1: document.getElementById('nomePainel1').value || "CENTRAL",
+            nomePainel2: document.getElementById('nomePainel2').value || "WAREZ",
+            nomePainel3: document.getElementById('nomePainel3').value || "ZEUS",
+            togglePainel1: document.getElementById('togglePainel1').checked,
+            togglePainel2: document.getElementById('togglePainel2').checked,
+            togglePainel3: document.getElementById('togglePainel3').checked
+        };
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral").set(config).then(() => {
+            atualizarBadgesCreditos();
+            document.getElementById('painel1Label').innerText = `Painel 1 (${config.nomePainel1})`;
+            document.getElementById('painel2Label').innerText = `Painel 2 (${config.nomePainel2})`;
+            document.getElementById('painel3Label').innerText = `Painel 3 (${config.nomePainel3})`;
+            renderPaineisAtivos();
+            alert("✅ Configurações salvas!");
+        }).catch(err => alert("Erro: "+err.message));
+    }
+
+    function renderPaineisAtivos() {
+        const container = document.getElementById('paineisAtivos');
+        container.innerHTML = '';
+        if(config.togglePainel1) {
+            container.innerHTML += `<button class="btn btn-outline-light btn-sm w-100" onclick="accessPanel(1)">📡 ${config.nomePainel1} <span id="badgeCentral" class="badge-creditos">${config.credCentral || 0}</span></button>`;
+        }
+        if(config.togglePainel2) {
+            container.innerHTML += `<button class="btn btn-outline-light btn-sm w-100" onclick="accessPanel(2)">⚡ ${config.nomePainel2} <span id="badgeWarez" class="badge-creditos">${config.credWarez || 0}</span></button>`;
+        }
+        if(config.togglePainel3) {
+            container.innerHTML += `<button class="btn btn-outline-light btn-sm w-100" onclick="accessPanel(3)">🔥 ${config.nomePainel3} <span id="badgeZeus" class="badge-creditos">${config.credZeus || 0}</span></button>`;
+        }
+    }
+
+    function showModalCadastro(id = "") {
+        if(id === "") {
+            document.getElementById('editId').value = "";
+            document.getElementById('cNome').value = ""; document.getElementById('cUser').value = ""; document.getElementById('cPass').value = "";
+            document.getElementById('cValor').value = ""; document.getElementById('cData').value = ""; document.getElementById('cServ').value = "";
+            document.getElementById('cUrl').value = ""; document.getElementById('cTel').value = ""; document.getElementById('cObs').value = "";
+            document.getElementById('cPainel').value = "central";
+        }
+        new bootstrap.Modal(document.getElementById('modalCadastro')).show();
+    }
+
+    function saveCliente() {        if(!usuarioLogadoUid) return;
+        const id = document.getElementById('editId').value;
+        const clienteData = {
+            nome: document.getElementById('cNome').value,
+            user: document.getElementById('cUser').value,
+            pass: document.getElementById('cPass').value,
+            valor: parseFloat(document.getElementById('cValor').value) || 0,
+            data: document.getElementById('cData').value,
+            serv: document.getElementById('cServ').value,
+            url: document.getElementById('cUrl').value,            tel: document.getElementById('cTel').value,
+            obs: document.getElementById('cObs').value,
+            painel: document.getElementById('cPainel').value || 'central',
+            status: 'ativo'
+        };
+        const modalEl = document.getElementById('modalCadastro');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        
+        if(id === "") {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").add(clienteData).then(() => modal.hide());
+        } else {
+            const original = clientes.find(c => c.id === id);            if(original) {
+                clienteData.status = original.status;
+                if(original.ultimoPagamento) clienteData.ultimoPagamento = original.ultimoPagamento;
+            }
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).set(clienteData).then(() => modal.hide());
+        }
+    }
+    
+    function addOneMonthFromToday() {
+        let hoje = new Date();
+        hoje.setMonth(hoje.getMonth() + 1);
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        return `${ano}-${mes}-${dia}`;
+    }
+    
+    function formatarDataBR(dataISO) {
+        if(!dataISO) return "";
+        let partes = dataISO.split('-');
+        if(partes.length===3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        return dataISO;
+    }
+    
+    function renovarCliente(id) {
+        const cliente = clientes.find(c => c.id === id);
+        if(!cliente) return;
+        const painel = cliente.painel || 'central';
+        if(!consumirCredito(painel)) return;
+        const novaDataISO = addOneMonthFromToday();
+        const novaDataBR = formatarDataBR(novaDataISO);
+        const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
+        const msg = `✅𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${cliente.serv || 'ITV'}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${novaDataBR}\n\nDivirta-se!!`;
+        if(cliente.tel) {
+            window.open(`https://wa.me/${cliente.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+        } else alert("Número não cadastrado!");
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
+            data: novaDataISO,
+            status: 'ativo',
+            ultimoPagamento: new Date().toISOString()
+        }).catch(e => alert("Erro ao renovar: "+e.message));
+    }
+    
+    function marcarAReceber(id) {
+        const cliente = clientes.find(c => c.id === id);        if(!cliente) return;
+        const painel = cliente.painel || 'central';
+        if(!consumirCredito(painel)) return;
+        const novaDataISO = addOneMonthFromToday();
+        const novaDataBR = formatarDataBR(novaDataISO);
+        const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
+        const msg = `⛔️𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 ℕ𝔸𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${cliente.serv || 'ITV'}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${novaDataBR}\n\nDivirta-se!!`;
+        if(cliente.tel) window.open(`https://wa.me/${cliente.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+        else alert("Número não cadastrado!");
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
+            data: novaDataISO,
+            status: 'apagar'        });
+    }
+    
+    function pagarCliente(id) {
+        const cliente = clientes.find(c => c.id === id);
+        if(!cliente) return;
+        const dataAtualBR = formatarDataBR(cliente.data);
+        const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
+        const msg = `✅𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${cliente.serv || 'ITV'}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${dataAtualBR}\n\nDivirta-se!!`;
+        if(cliente.tel) window.open(`https://wa.me/${cliente.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+        else alert("Número não cadastrado!");
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
+            status: 'ativo',
+            ultimoPagamento: new Date().toISOString()
+        });
+    }
+
+    function compartilharCliente(id) {
+        const c = clientes.find(i => i.id === id);        if(!c) return;
+        if(!c.tel) return alert("Telefone não cadastrado!");
+        const msg = `📺 *Dados de Acesso ITV*\n\n👤 Usuário: ${c.user || '-'}\n🔑 Senha: ${c.pass || '-'}\n🔗 Url: ${c.url || '-'}`;
+        window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+    }
+    
+    function abrirAcoesCliente(id) {
+        const c = clientes.find(i => i.id === id);
+        if(!c) return;
+        
+        document.getElementById('acoesTitulo').innerText = `👤 ${c.nome}`;
+        document.getElementById('acoesSubtitulo').innerText = c.status === 'apagar' ? '⏳ Status: A RECEBER' : '';
+        
+        let infoHtml = `
+            <div class="info-item info-full"><span class="info-label">Nome:</span><span class="info-value">${c.nome}</span></div>
+            <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${c.user || '-'}</span></div>
+            <div class="info-item"><span class="info-label">Senha:</span><span class="info-value">${c.pass || '-'}</span></div>
+            <div class="info-item"><span class="info-label">Valor:</span><span class="info-value">R$ ${c.valor.toFixed(2)}</span></div>
+            <div class="info-item"><span class="info-label">Painel:</span><span class="info-value">${(c.painel || 'central').toUpperCase()}</span></div>
+            <div class="info-item info-full"><span class="info-label">Vencimento:</span><span class="info-value">${formatarDataBR(c.data)}</span></div>
+        `;
+        document.getElementById('acoesInfoResumo').innerHTML = infoHtml;
+        
+        const grid = document.getElementById('acoesGrid');
+        
+        if(c.status === 'deletado') {
+            grid.innerHTML = `
+                <div class="modal-acoes-row">                    <button class="btn btn-info" onclick="restore('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">♻️ RESTAURAR</button>
+                    <button class="btn btn-danger" onclick="hardDelete('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🗑️ EXCLUIR PERM</button>
+                </div>
+            `;
+        } else if(c.status === 'apagar') {
+            grid.innerHTML = `
+                <div class="modal-acoes-row">
+                    <button class="btn btn-success" onclick="pagarCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">✅ PAGAR</button>
+                    <button class="btn bg-lilas" onclick="editCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">✏️ EDITAR</button>
+                </div>
+            `;
+        } else {
+            grid.innerHTML = `
+                <div class="modal-acoes-row">
+                    <button class="btn" style="background-color:#25D366;" onclick="openWhatsApp('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();"><i class="bi bi-whatsapp"></i> ZAP</button>
+                    <button class="btn btn-success" onclick="sendCobrancaZap('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">💰 COBRAR</button>
+                    <button class="btn btn-warning text-dark" onclick="renovarCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🔄 RENOVAR</button>                    <button class="btn btn-secondary" onclick="marcarAReceber('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">⏳ A RECEBER</button>
+                </div>
+                <div class="modal-acoes-row">
+                    <button class="btn btn-info" onclick="compartilharCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">📤 COMPARTILHAR</button>
+                    <button class="btn bg-lilas" onclick="editCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">✏️ EDITAR</button>
+                    <button class="btn btn-danger" onclick="softDelete('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🗑️ DELETAR</button>
+                </div>
+            `;
+        }
+        new bootstrap.Modal(document.getElementById('modalAcoes')).show();
+    }
+    
+    function renderClientes() {
+        const listaDiv = document.getElementById('listaClientes');
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        listaDiv.innerHTML = "";
+        let counts = { ativos:0, vencer:0, exp:0, apagar:0, del:0 };
+        const hoje = new Date();
+        
+        clientes.forEach(c => {
+            let partes = c.data.split('-');
+            let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+            let diffDays = Math.ceil((dataVenc - hoje) / (1000*3600*24));
+            let statusReal = c.status;
+            if(c.status !== 'deletado' && c.status !== 'apagar') {
+                if(diffDays < 0) statusReal = 'expirado';
+                else if(diffDays <= 3) statusReal = 'vencer';
+                else statusReal = 'ativo';
+            }
+            if(statusReal === 'ativo') counts.ativos++;            if(statusReal === 'vencer') counts.vencer++;
+            if(statusReal === 'expirado') counts.exp++;
+            if(c.status === 'apagar') counts.apagar++;
+            if(c.status === 'deletado') counts.del++;
+            
+            if(currentFilter === 'ativos' && !(statusReal === 'ativo')) return;
+            if(currentFilter === 'vencer' && statusReal !== 'vencer') return;
+            if(currentFilter === 'expirados' && statusReal !== 'expirado') return;
+            if(currentFilter === 'apagar' && c.status !== 'apagar') return;
+            if(currentFilter === 'deletados' && c.status !== 'deletado') return;
+            if(!c.nome.toLowerCase().includes(searchTerm)) return;
+            
+            let badgeClass = 'bg-success';
+            if(statusReal === 'expirado') badgeClass = 'bg-danger';
+            else if(statusReal === 'vencer') badgeClass = 'bg-warning text-dark';
+            let dataExib = c.data.split('-').reverse().join('/');
+            
+            listaDiv.innerHTML += `
+                <div class="card-cliente" onclick="abrirAcoesCliente('${c.id}')">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap">
+                        <h5 class="mb-1">${c.nome}</h5>                        <span class="badge ${badgeClass}">${dataExib}</span>
+                    </div>
+                    <div class="cliente-info">
+                        <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${c.user || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Senha:</span><span class="info-value">${c.pass || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Valor:</span><span class="info-value">R$ ${c.valor.toFixed(2)}</span></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('countAtivos').innerText = counts.ativos;
+        document.getElementById('countVencer').innerText = counts.vencer;
+        document.getElementById('countExp').innerText = counts.exp;
+        document.getElementById('countPagar').innerText = counts.apagar;
+        document.getElementById('countDel').innerText = counts.del;
+        renderFinanceiro();
+    }
+    
+    function sendCobrancaZap(id) {        const c = clientes.find(i => i.id === id);
+        if(!c) return;
+        const msgCobranca = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩\n🚨🚨🚨\nOlá ${c.nome}!!\nSua lista de TV expirou em ${c.data.split('-').reverse().join('/')}\nPara renovar, faça um Pix 💠\n💰Plano: R$ ${c.valor.toFixed(2)}\n${config.msg || ""}`;
+        if(c.tel) window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msgCobranca)}`);
+        else alert("Número não cadastrado!");
+    }
+    function openWhatsApp(id) {
+        const c = clientes.find(i => i.id === id);
+        if(c && c.tel) window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}`);
+        else alert("Telefone não informado.");
+    }
+    
+    function renderFinanceiro() {
+        const dataFiltro = document.getElementById('filterMes').value;
+        const mesFiltro = dataFiltro.slice(0, 7); 
+        let recebidoMes = 0;
+        let totalGeral = 0;
+        let totalActive = 0;
+        
+        clientes.forEach(c => {
+            if(c.status !== 'deletado') {
+                let val = parseFloat(c.valor) || 0;
+                totalGeral += val;
+                totalActive++;
+                
+                let mesPagamentoLocal = "";
+                if (c.ultimoPagamento) {
+                    const dataPagamento = new Date(c.ultimoPagamento);
+                    const ano = dataPagamento.getFullYear();
+                    const mes = String(dataPagamento.getMonth() + 1).padStart(2, '0');
+                    mesPagamentoLocal = `${ano}-${mes}`;
+                }
+                
+                if(mesPagamentoLocal === mesFiltro) {
+                    recebidoMes += val;
+                }
+            }
+        });
+        
+        let aReceber = totalGeral - recebidoMes;
+        
+        document.getElementById('finRecebido').innerText = `R$ ${recebidoMes.toFixed(2)}`;
+        document.getElementById('finPendente').innerText = `R$ ${aReceber.toFixed(2)}`;
+        document.getElementById('finTotalClientes').innerText = totalActive;
+        document.getElementById('finGeral').innerText = `R$ ${totalGeral.toFixed(2)}`;
+    }
+    
+    function filterData(f) { currentFilter = f; renderClientes(); }
+    function softDelete(id) { if(usuarioLogadoUid) db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({ status: 'deletado' }); }
+    function restore(id) { if(usuarioLogadoUid) db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({ status: 'ativo' }); }
+    function hardDelete(id) { if(confirm("Excluir permanentemente?")) db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).delete(); }
+    function accessPanel(n) { let u = config['p'+n]; if(u) window.open(u); else alert("Configure a URL no menu lateral."); }
+    function editCliente(id) {
+        let c = clientes.find(i => i.id === id);
+        if(c) {
+            document.getElementById('editId').value = c.id;            document.getElementById('cNome').value = c.nome; document.getElementById('cUser').value = c.user; document.getElementById('cPass').value = c.pass;
+            document.getElementById('cValor').value = c.valor; document.getElementById('cData').value = c.data; document.getElementById('cServ').value = c.serv || '';
+            document.getElementById('cUrl').value = c.url; document.getElementById('cTel').value = c.tel; document.getElementById('cObs').value = c.obs;
+            document.getElementById('cPainel').value = c.painel || 'central';
+            new bootstrap.Modal(document.getElementById('modalCadastro')).show();
+        }
+    }    
+    window.renovarCliente = renovarCliente;
+    window.marcarAReceber = marcarAReceber;
+    window.pagarCliente = pagarCliente;
+    window.compartilharCliente = compartilharCliente;
+    window.abrirAcoesCliente = abrirAcoesCliente;
+    window.sendCobrancaZap = sendCobrancaZap;
+    window.openWhatsApp = openWhatsApp;
+    window.editCliente = editCliente;
+    window.softDelete = softDelete;
+    window.restore = restore;
+    window.hardDelete = hardDelete;
+    window.filterData = filterData;
+    window.accessPanel = accessPanel;
+    window.saveSettings = saveSettings;
+    window.showModalCadastro = showModalCadastro;
+    window.toggleMenuSecao = toggleMenuSecao;
+    window.ajustarCredito = ajustarCredito;
+    window.atualizarDisplayCredito = atualizarDisplayCredito;
+    
+    // Expor funções do Banco ITV globalmente
+    window.abrirBancoItv = abrirBancoItv;
+    window.mudarViewBanco = mudarViewBanco;
+    window.calcularTotalBanco = calcularTotalBanco;
+    window.salvarEmprestimo = salvarEmprestimo;
+    window.pagarParcelaBanco = pagarParcelaBanco;
+    window.cobrarWhatsAppBanco = cobrarWhatsAppBanco;
+    window.excluirEmprestimo = excluirEmprestimo;
+    window.editarEmprestimo = editarEmprestimo;
 </script>
-
 </body>
 </html>

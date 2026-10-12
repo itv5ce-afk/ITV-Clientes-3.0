@@ -746,6 +746,7 @@
         document.getElementById('view-' + view).classList.add('active');
         if(btn) btn.classList.add('active');
         if(view === 'lista') renderizarListaBanco();
+        if(view === 'dashboard') renderizarDashboardBanco();
     }
 
     function calcularTotalBanco() {
@@ -824,33 +825,41 @@
 
         emprestimos.forEach(e => {
             if(e.status !== 'pago') {
-                totalEmprestado += e.valorEmprestado;
-                totalLucro += (e.valorTotal - e.valorEmprestado);
-                
-                const valorPago = (e.valorTotal / e.parcelas) * e.parcelasPagas;
-                totalRecebido += valorPago;
-                totalPendente += (e.valorTotal - valorPago);
+                const valorEmprestado = parseFloat(e.valorEmprestado) || 0;
+                const valorTotal = parseFloat(e.valorTotal) || 0;
+                const parcelas = parseInt(e.parcelas) || 1;
+                const parcelasPagas = parseInt(e.parcelasPagas) || 0;
 
-                // Verificar atraso
-                let partes = e.dataVencimento.split('-');
-                let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
-                // Adicionar dias baseados nas parcelas pagas (simplificado)
-                dataVenc.setMonth(dataVenc.getMonth() + e.parcelasPagas);
+                totalEmprestado += valorEmprestado;
+                totalLucro += (valorTotal - valorEmprestado);
                 
-                if(dataVenc < hoje && e.parcelasPagas < e.parcelas) {
-                    atrasadosHtml += `
-                        <div class="emprestimo-item border-danger">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="m-0 text-white">${e.nome}</h6>
-                                <span class="status-badge status-atrasado">ATRASADO</span>
-                            </div>
-                            <div class="small text-secondary mb-2">Vencimento: ${formatarDataBR(e.dataVencimento)} | Parcela: ${e.parcelasPagas + 1}/${e.parcelas}</div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-success flex-fill" onclick="pagarParcelaBanco('${e.id}')"><i class="bi bi-cash"></i> Receber</button>
-                                <button class="btn btn-sm btn-outline-light flex-fill" onclick="cobrarWhatsAppBanco('${e.id}')"><i class="bi bi-whatsapp"></i> Cobrar</button>
-                            </div>
-                        </div>
-                    `;
+                const valorPago = (valorTotal / parcelas) * parcelasPagas;
+                totalRecebido += valorPago;
+                totalPendente += (valorTotal - valorPago);
+
+                // Verificar atraso com segurança
+                if (e.dataVencimento) {
+                    let partes = e.dataVencimento.split('-');
+                    if (partes.length === 3) {
+                        let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+                        dataVenc.setMonth(dataVenc.getMonth() + parcelasPagas);
+                        
+                        if(dataVenc < hoje && parcelasPagas < parcelas) {
+                            atrasadosHtml += `
+                                <div class="emprestimo-item border-danger">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="m-0 text-white">${e.nome || 'Sem Nome'}</h6>
+                                        <span class="status-badge status-atrasado">ATRASADO</span>
+                                    </div>
+                                    <div class="small text-secondary mb-2">Vencimento: ${formatarDataBR(e.dataVencimento)} | Parcela: ${parcelasPagas + 1}/${parcelas}</div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-success flex-fill" onclick="pagarParcelaBanco('${e.id}')"><i class="bi bi-cash"></i> Receber</button>
+                                        <button class="btn btn-sm btn-outline-light flex-fill" onclick="cobrarWhatsAppBanco('${e.id}')"><i class="bi bi-whatsapp"></i> Cobrar</button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
                 }
             }
         });
@@ -864,36 +873,53 @@
     }
 
     function renderizarListaBanco() {
-        const search = document.getElementById('searchBanco').value.toLowerCase();
+        const search = (document.getElementById('searchBanco').value || "").toLowerCase();
         const container = document.getElementById('listaEmprestimosBanco');
         container.innerHTML = '';
 
-        emprestimos.filter(e => e.nome.toLowerCase().includes(search)).forEach(e => {
-            const valorParcela = e.valorTotal / e.parcelas;
-            const pendente = e.valorTotal - (valorParcela * e.parcelasPagas);
+        if (emprestimos.length === 0) {
+            container.innerHTML = '<div class="text-center text-secondary py-4">Nenhum empréstimo cadastrado ainda.</div>';
+            return;
+        }
+
+        // Garante que TODOS os clientes cadastrados sejam visíveis, filtrando apenas pela busca
+        emprestimos.filter(e => (e.nome || "").toLowerCase().includes(search)).forEach(e => {
+            const parcelas = parseInt(e.parcelas) || 1;
+            const parcelasPagas = parseInt(e.parcelasPagas) || 0;
+            const valorTotal = parseFloat(e.valorTotal) || 0;
+            const valorParcela = valorTotal / parcelas;
+            const pendente = Math.max(0, valorTotal - (valorParcela * parcelasPagas));
+            
             let statusClass = 'status-ativo';
             let statusText = 'ATIVO';
             
-            if(e.status === 'pago') { statusClass = 'status-pago'; statusText = 'PAGO'; }
-            else {
+            if(e.status === 'pago') { 
+                statusClass = 'status-pago'; 
+                statusText = 'PAGO'; 
+            } else if (e.dataVencimento) {
                 let partes = e.dataVencimento.split('-');
-                let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
-                dataVenc.setMonth(dataVenc.getMonth() + e.parcelasPagas);
-                if(dataVenc < new Date()) { statusClass = 'status-atrasado'; statusText = 'ATRASADO'; }
+                if (partes.length === 3) {
+                    let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+                    dataVenc.setMonth(dataVenc.getMonth() + parcelasPagas);
+                    if(dataVenc < new Date()) { 
+                        statusClass = 'status-atrasado'; 
+                        statusText = 'ATRASADO'; 
+                    }
+                }
             }
 
             container.innerHTML += `
                 <div class="emprestimo-item" onclick="editarEmprestimo('${e.id}')">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h6 class="m-0 text-white fw-bold">${e.nome}</h6>
+                            <h6 class="m-0 text-white fw-bold">${e.nome || 'Sem Nome'}</h6>
                             <small class="text-secondary"><i class="bi bi-telephone me-1"></i>${e.telefone || 'Sem telefone'}</small>
                         </div>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="row g-1 mb-3 small">
-                        <div class="col-6 text-secondary">Total: <span class="text-white">${e.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
-                        <div class="col-6 text-secondary">Parcelas: <span class="text-white">${e.parcelasPagas}/${e.parcelas}</span></div>
+                        <div class="col-6 text-secondary">Total: <span class="text-white">${valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+                        <div class="col-6 text-secondary">Parcelas: <span class="text-white">${parcelasPagas}/${parcelas}</span></div>
                         <div class="col-12 text-secondary">Pendente: <span class="text-warning fw-bold">${pendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
                     </div>
                     <div class="d-flex gap-2" onclick="event.stopPropagation()">
@@ -910,12 +936,12 @@
         const e = emprestimos.find(x => x.id === id);
         if(!e) return;
         document.getElementById('bancoEditId').value = e.id;
-        document.getElementById('bancoNome').value = e.nome;
-        document.getElementById('bancoTelefone').value = e.telefone;
-        document.getElementById('bancoValor').value = e.valorEmprestado;
-        document.getElementById('bancoJuros').value = e.taxaJuros;
-        document.getElementById('bancoParcelas').value = e.parcelas;
-        document.getElementById('bancoDataVenc').value = e.dataVencimento;
+        document.getElementById('bancoNome').value = e.nome || "";
+        document.getElementById('bancoTelefone').value = e.telefone || "";
+        document.getElementById('bancoValor').value = e.valorEmprestado || "";
+        document.getElementById('bancoJuros').value = e.taxaJuros || "0";
+        document.getElementById('bancoParcelas').value = e.parcelas || "1";
+        document.getElementById('bancoDataVenc').value = e.dataVencimento || "";
         document.getElementById('bancoObs').value = e.obs || '';
         calcularTotalBanco();
         mudarViewBanco('novo', document.querySelectorAll('.banco-nav-btn')[2]);
@@ -924,17 +950,25 @@
     function pagarParcelaBanco(id) {
         const e = emprestimos.find(x => x.id === id);
         if(!e) return;
-        if(e.parcelasPagas >= e.parcelas) return alert("Este empréstimo já está quitado!");
+        const parcelas = parseInt(e.parcelas) || 1;
+        const parcelasPagas = parseInt(e.parcelasPagas) || 0;
+        
+        if(parcelasPagas >= parcelas) return alert("Este empréstimo já está quitado!");
 
-        if(confirm(`Confirmar recebimento da parcela ${e.parcelasPagas + 1} de ${e.nome}?`)) {
-            const novasParcelasPagas = e.parcelasPagas + 1;
-            const novoStatus = novasParcelasPagas >= e.parcelas ? 'pago' : 'ativo';
+        if(confirm(`Confirmar recebimento da parcela ${parcelasPagas + 1} de ${e.nome}?`)) {
+            const novasParcelasPagas = parcelasPagas + 1;
+            const novoStatus = novasParcelasPagas >= parcelas ? 'pago' : 'ativo';
             
             // Calcular nova data de vencimento para a próxima parcela
-            let partes = e.dataVencimento.split('-');
-            let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
-            dataVenc.setMonth(dataVenc.getMonth() + novasParcelasPagas);
-            const novaDataVencISO = `${dataVenc.getFullYear()}-${String(dataVenc.getMonth() + 1).padStart(2, '0')}-${String(dataVenc.getDate()).padStart(2, '0')}`;
+            let novaDataVencISO = e.dataVencimento;
+            if (e.dataVencimento) {
+                let partes = e.dataVencimento.split('-');
+                if (partes.length === 3) {
+                    let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
+                    dataVenc.setMonth(dataVenc.getMonth() + novasParcelasPagas);
+                    novaDataVencISO = `${dataVenc.getFullYear()}-${String(dataVenc.getMonth() + 1).padStart(2, '0')}-${String(dataVenc.getDate()).padStart(2, '0')}`;
+                }
+            }
 
             db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").doc(id).update({
                 parcelasPagas: novasParcelasPagas,
@@ -944,7 +978,8 @@
             }).then(() => {
                 // Enviar comprovante opcional
                 if(e.telefone && confirm("Deseja enviar comprovante de pagamento no WhatsApp?")) {
-                    const msg = `✅ *BANCO ITV* - Comprovante de Pagamento\n\nOlá ${e.nome}, recebemos sua parcela nº ${novasParcelasPagas} no valor de ${(e.valorTotal/e.parcelas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\n${novoStatus === 'pago' ? '🎉 Parabéns! Seu empréstimo está QUITADO!' : `Próximo vencimento: ${formatarDataBR(novaDataVencISO)}`}`;
+                    const valorParcela = (parseFloat(e.valorTotal) || 0) / parcelas;
+                    const msg = `✅ *BANCO ITV* - Comprovante de Pagamento\n\nOlá ${e.nome}, recebemos sua parcela nº ${novasParcelasPagas} no valor de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\n${novoStatus === 'pago' ? '🎉 Parabéns! Seu empréstimo está QUITADO!' : `Próximo vencimento: ${formatarDataBR(novaDataVencISO)}`}`;
                     window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
                 }
                 alert("✅ Parcela registrada com sucesso!");
@@ -957,8 +992,12 @@
         if(!e) return alert("Cliente não encontrado!");
         if(!e.telefone) return alert("Telefone não cadastrado!");
         
-        const valorParcela = e.valorTotal / e.parcelas;
-        const msg = `🏦 *BANCO ITV* - Aviso de Cobrança\n\nOlá ${e.nome}, sua parcela nº ${e.parcelasPagas + 1} no valor de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} está vencida.\nData de vencimento: ${formatarDataBR(e.dataVencimento)}.\n\nPor favor, regularize para evitar juros adicionais.`;
+        const parcelas = parseInt(e.parcelas) || 1;
+        const parcelasPagas = parseInt(e.parcelasPagas) || 0;
+        const valorTotal = parseFloat(e.valorTotal) || 0;
+        const valorParcela = valorTotal / parcelas;
+        
+        const msg = `🏦 *BANCO ITV* - Aviso de Cobrança\n\nOlá ${e.nome}, sua parcela nº ${parcelasPagas + 1} no valor de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} está vencida.\nData de vencimento: ${formatarDataBR(e.dataVencimento)}.\n\nPor favor, regularize para evitar juros adicionais.`;
         window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
     }
 

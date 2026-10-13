@@ -921,6 +921,7 @@
                         <div class="col-6 text-secondary">Total: <span class="text-white">${valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
                         <div class="col-6 text-secondary">Parcelas: <span class="text-white">${parcelasPagas}/${parcelas}</span></div>
                         <div class="col-12 text-secondary">Pendente: <span class="text-warning fw-bold">${pendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+                        <div class="col-12 text-secondary">Vencimento: <span class="text-info">${formatarDataBR(e.dataVencimento) || 'Não definida'}</span></div>
                     </div>
                     <div class="d-flex gap-2" onclick="event.stopPropagation()">
                         ${e.status !== 'pago' ? `<button class="btn btn-sm btn-success flex-fill" onclick="pagarParcelaBanco('${e.id}')"><i class="bi bi-cash-coin"></i> Pagar Parcela</button>` : ''}
@@ -959,13 +960,13 @@
             const novasParcelasPagas = parcelasPagas + 1;
             const novoStatus = novasParcelasPagas >= parcelas ? 'pago' : 'ativo';
             
-            // Calcular nova data de vencimento para a próxima parcela
+            // Calcular nova data de vencimento para a próxima parcela (adiciona 1 mês à data atual)
             let novaDataVencISO = e.dataVencimento;
             if (e.dataVencimento) {
                 let partes = e.dataVencimento.split('-');
                 if (partes.length === 3) {
                     let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
-                    dataVenc.setMonth(dataVenc.getMonth() + novasParcelasPagas);
+                    dataVenc.setMonth(dataVenc.getMonth() + 1); // Adiciona 1 mês (ex: 01/01 vira 01/02)
                     novaDataVencISO = `${dataVenc.getFullYear()}-${String(dataVenc.getMonth() + 1).padStart(2, '0')}-${String(dataVenc.getDate()).padStart(2, '0')}`;
                 }
             }
@@ -976,13 +977,24 @@
                 dataVencimento: novaDataVencISO,
                 ultimoPagamento: new Date().toISOString()
             }).then(() => {
-                // Enviar comprovante opcional
-                if(e.telefone && confirm("Deseja enviar comprovante de pagamento no WhatsApp?")) {
+                // Direciona para o WhatsApp e envia a mensagem formatada automaticamente
+                if(e.telefone) {
+                    const valorTotalFmt = parseFloat(e.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     const valorParcela = (parseFloat(e.valorTotal) || 0) / parcelas;
-                    const msg = `✅ *BANCO ITV* - Comprovante de Pagamento\n\nOlá ${e.nome}, recebemos sua parcela nº ${novasParcelasPagas} no valor de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\n${novoStatus === 'pago' ? '🎉 Parabéns! Seu empréstimo está QUITADO!' : `Próximo vencimento: ${formatarDataBR(novaDataVencISO)}`}`;
+                    const valorParcelaFmt = valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    const pendente = Math.max(0, parseFloat(e.valorTotal) - (valorParcela * novasParcelasPagas));
+                    const pendenteFmt = pendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    const proximaDataFmt = formatarDataBR(novaDataVencISO);
+                    
+                    const proximaDataTexto = novoStatus === 'pago' ? 'EMPRÉSTIMO QUITADO! 🎉' : proximaDataFmt;
+
+                    const msg = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩\n✅*BANCO ITV* - 𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nOlá ${e.nome},\nValor do Empréstimo R$: ${valorTotalFmt}.\n\nRecebemos sua parcela nº: ${novasParcelasPagas}/${parcelas}.\nValor da Parcela R$: ${valorParcelaFmt}.\nValor Pendente R$: ${pendenteFmt}.\nData do Próximo Parcela: ${proximaDataTexto}`;
+                    
                     window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
                 }
                 alert("✅ Parcela registrada com sucesso!");
+            }).catch(err => {
+                alert("Erro ao registrar parcela: " + err.message);
             });
         }
     }
@@ -996,8 +1008,37 @@
         const parcelasPagas = parseInt(e.parcelasPagas) || 0;
         const valorTotal = parseFloat(e.valorTotal) || 0;
         const valorParcela = valorTotal / parcelas;
+        const valorPendente = Math.max(0, valorTotal - (valorParcela * parcelasPagas));
         
-        const msg = `🏦 *BANCO ITV* - Aviso de Cobrança\n\nOlá ${e.nome}, sua parcela nº ${parcelasPagas + 1} no valor de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} está vencida.\nData de vencimento: ${formatarDataBR(e.dataVencimento)}.\n\nPor favor, regularize para evitar juros adicionais.`;
+        const valorTotalFmt = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const valorParcelaFmt = valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const valorPendenteFmt = valorPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const dataVencFmt = formatarDataBR(e.dataVencimento);
+
+        const msg = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩
+⛔️*BANCO ITV* -  𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 ℕ𝔸𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!
+
+Olá ${e.nome},
+Valor do Empréstimo R$: ${valorTotalFmt}.
+
+Sua parcela nº: ${parcelasPagas + 1}/${parcelas}.
+Valor da Parcela R$: ${valorParcelaFmt}.
+Valor Pendente R$: ${valorPendenteFmt}.
+Data: ${dataVencFmt}
+
+Por favor, regularize para evitar juros adicionais, 
+
+Faça um Pix 💠
+💰VALOR: ${valorParcelaFmt}
+
+🏦Banco: *Pic Pay*
+👤Nome: *Maria lucilene* 
+📲Opção: *Celular*
+🔑 Chaves: *(85)996498573*
+
+_Após o pagamento, encaminhar o comprovante.
+🤝 Obrigado!.`;
+        
         window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
     }
 

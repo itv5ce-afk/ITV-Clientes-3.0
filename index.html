@@ -34,19 +34,16 @@
         .btn-outline-light { border-radius: 40px; }
         .nav-buttons-painel { display: flex; gap: 8px; margin-bottom: 20px; }
         
-        /* Novos estilos para o card de informações */
         .cliente-info { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 0.78rem; color: #ccc; margin-top: 6px; }
         .cliente-info .info-item { display: flex; gap: 4px; }
         .cliente-info .info-label { color: #888; font-weight: 500; }
         .cliente-info .info-value { color: #fff; word-break: break-all; }
         .cliente-info .info-full { grid-column: 1 / -1; }
         
-        /* Estilos para os botões do modal de ações */
         .modal-acoes-grid { display: flex; flex-direction: column; gap: 10px; }
         .modal-acoes-row { display: flex; gap: 8px; }
         .modal-acoes-row .btn { flex: 1; font-size: 0.78rem; font-weight: 600; padding: 10px 4px; border-radius: 12px; border: none; color: white; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
-        /* NOVA NAVBAR INFERIOR */
         .navbar-inferior {            display: flex;            align-items: center;
             justify-content: space-between;
             width: 100%;
@@ -101,7 +98,6 @@
             padding: 4px 8px;
         }
 
-        /* ===== NOVOS ESTILOS - MENU LATERAL COM BOTÕES ===== */
         .menu-btn-group {
             display: flex;
             flex-direction: column;
@@ -195,7 +191,6 @@
             margin-left: auto;
         }
         
-        /* NOVO: Estilos para toggle switch */
         .toggle-container {
             display: flex;
             align-items: center;
@@ -241,9 +236,6 @@
             transform: translateX(24px);
         }
         
-        /* ==========================================================================
-           NOVOS ESTILOS: BANCO ITV (Aplicativo Mobile / Desktop Responsivo)
-           ========================================================================== */
         .modal-banco-itv .modal-content {
             background: #0f1115;
             border-radius: 0;
@@ -557,7 +549,9 @@
                 <select id="cPainel" class="form-control form-select mb-2">
                     <option value="central">📡 CENTRAL</option>
                     <option value="warez">⚡ WAREZ</option>
-                    <option value="zeus">🔥 ZEUS</option>                </select>
+                    <option value="zeus">🔥 ZEUS</option>
+                    <option value="itvplayer">🎬 ITVPlayer</option>
+                </select>
                 <label class="small">Observações:</label><textarea id="cObs" class="form-control mb-2" rows="2"></textarea>
                 <button class="btn btn-success w-100 mt-2 rounded-pill" onclick="saveCliente()">Salvar Cliente</button>
             </div>
@@ -837,7 +831,6 @@
                 totalRecebido += valorPago;
                 totalPendente += (valorTotal - valorPago);
 
-                // Verificar atraso com segurança
                 if (e.dataVencimento) {
                     let partes = e.dataVencimento.split('-');
                     if (partes.length === 3) {
@@ -882,7 +875,6 @@
             return;
         }
 
-        // Garante que TODOS os clientes cadastrados sejam visíveis, filtrando apenas pela busca
         emprestimos.filter(e => (e.nome || "").toLowerCase().includes(search)).forEach(e => {
             const parcelas = parseInt(e.parcelas) || 1;
             const parcelasPagas = parseInt(e.parcelasPagas) || 0;
@@ -960,13 +952,12 @@
             const novasParcelasPagas = parcelasPagas + 1;
             const novoStatus = novasParcelasPagas >= parcelas ? 'pago' : 'ativo';
             
-            // Calcular nova data de vencimento para a próxima parcela (adiciona 1 mês à data atual)
             let novaDataVencISO = e.dataVencimento;
             if (e.dataVencimento) {
                 let partes = e.dataVencimento.split('-');
                 if (partes.length === 3) {
                     let dataVenc = new Date(partes[0], partes[1] - 1, partes[2]);
-                    dataVenc.setMonth(dataVenc.getMonth() + 1); // Adiciona 1 mês (ex: 01/01 vira 01/02)
+                    dataVenc.setMonth(dataVenc.getMonth() + 1);
                     novaDataVencISO = `${dataVenc.getFullYear()}-${String(dataVenc.getMonth() + 1).padStart(2, '0')}-${String(dataVenc.getDate()).padStart(2, '0')}`;
                 }
             }
@@ -977,7 +968,6 @@
                 dataVencimento: novaDataVencISO,
                 ultimoPagamento: new Date().toISOString()
             }).then(() => {
-                // Direciona para o WhatsApp e envia a mensagem formatada automaticamente
                 if(e.telefone) {
                     const valorTotalFmt = parseFloat(e.valorTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     const valorParcela = (parseFloat(e.valorTotal) || 0) / parcelas;
@@ -1117,7 +1107,9 @@ _Após o pagamento, encaminhar o comprovante.
         document.getElementById('credZeusDisplay').innerText = config.credZeus || 0;
     }
 
+    // ✅ NOVO: painel "itvplayer" não consome créditos (livre)
     function consumirCredito(painel) {
+        if (painel === 'itvplayer') return true;
         const chave = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
         const atual = parseInt(config[chave]) || 0;
         if (atual <= 0) {
@@ -1292,7 +1284,6 @@ _Após o pagamento, encaminhar o comprovante.
         const painel = cliente.painel || 'central';
         if(!consumirCredito(painel)) return;
 
-        // Calcular nova data de vencimento: 1 mês após a Data Vencimento cadastrada
         let novaDataISO = "";
         if (cliente.data) {
             let partes = cliente.data.split('-');
@@ -1310,11 +1301,12 @@ _Após o pagamento, encaminhar o comprovante.
         const novaDataBR = formatarDataBR(novaDataISO);
         const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
 
-        // Provedor = Nome do painel onde será renovado
+        // Provedor = Nome do painel onde será renovado (inclui ITVPlayer)
         let nomePainelProvedor = 'ITV';
         if (painel === 'central') nomePainelProvedor = config.nomePainel1 || 'CENTRAL';
         else if (painel === 'warez') nomePainelProvedor = config.nomePainel2 || 'WAREZ';
         else if (painel === 'zeus') nomePainelProvedor = config.nomePainel3 || 'ZEUS';
+        else if (painel === 'itvplayer') nomePainelProvedor = 'ITVPlayer';
 
         const msg = `✅𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${nomePainelProvedor}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${novaDataBR}\n\nDivirta-se!!`;
 

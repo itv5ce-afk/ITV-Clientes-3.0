@@ -1283,18 +1283,45 @@ _Após o pagamento, encaminhar o comprovante.
         return dataISO;
     }
     
+    // ============================================================
+    // RENOVAR CLIENTE - Nova data = Data Vencimento + 1 mês
+    // ============================================================
     function renovarCliente(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
         const painel = cliente.painel || 'central';
         if(!consumirCredito(painel)) return;
-        const novaDataISO = addOneMonthFromToday();
+
+        // Calcular nova data de vencimento: 1 mês após a Data Vencimento cadastrada
+        let novaDataISO = "";
+        if (cliente.data) {
+            let partes = cliente.data.split('-');
+            if (partes.length === 3) {
+                let dataBase = new Date(partes[0], partes[1] - 1, partes[2]);
+                dataBase.setMonth(dataBase.getMonth() + 1);
+                const ano = dataBase.getFullYear();
+                const mes = String(dataBase.getMonth() + 1).padStart(2, '0');
+                const dia = String(dataBase.getDate()).padStart(2, '0');
+                novaDataISO = `${ano}-${mes}-${dia}`;
+            }
+        }
+        if (!novaDataISO) novaDataISO = addOneMonthFromToday();
+
         const novaDataBR = formatarDataBR(novaDataISO);
         const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
-        const msg = `✅𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${cliente.serv || 'ITV'}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${novaDataBR}\n\nDivirta-se!!`;
+
+        // Provedor = Nome do painel onde será renovado
+        let nomePainelProvedor = 'ITV';
+        if (painel === 'central') nomePainelProvedor = config.nomePainel1 || 'CENTRAL';
+        else if (painel === 'warez') nomePainelProvedor = config.nomePainel2 || 'WAREZ';
+        else if (painel === 'zeus') nomePainelProvedor = config.nomePainel3 || 'ZEUS';
+
+        const msg = `✅𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${nomePainelProvedor}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${novaDataBR}\n\nDivirta-se!!`;
+
         if(cliente.tel) {
             window.open(`https://wa.me/${cliente.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
         } else alert("Número não cadastrado!");
+
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
             data: novaDataISO,
             status: 'ativo',

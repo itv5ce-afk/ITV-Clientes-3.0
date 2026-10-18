@@ -65,6 +65,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            gap: 12px;
         }
         .btn-add-fixo {
             background-color: #198754;
@@ -101,6 +102,30 @@
         }
         .btn-banco-itv-nav:active { transform: scale(0.95); }
         .btn-banco-itv-nav i { font-size: 1.3rem; }
+
+        /* Estilo do botão REVENDA na navbar inferior */
+        .btn-revenda-nav {
+            background: linear-gradient(135deg, #ff9900, #ff6600) !important;
+            color: white !important;
+            border: none;
+            border-radius: 26px !important;
+            height: 52px;
+            padding: 0 16px !important;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 -2px 12px rgba(255, 153, 0, 0.5);
+            margin-top: -20px;
+            transition: transform 0.1s ease;
+        }
+        .btn-revenda-nav:active { transform: scale(0.95); }
+        .btn-revenda-nav i { font-size: 1.3rem; }
+        .btn-revenda-nav.voltar {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+            box-shadow: 0 -2px 12px rgba(108, 117, 125, 0.5);
+        }
 
         .navbar-brand-bottom {
             color: #fff !important;
@@ -354,11 +379,11 @@
             .stat-val { font-size: 1.2rem; }
             .modal-acoes-row .btn { font-size: 0.72rem; padding: 9px 2px; }
             .navbar-brand-bottom { font-size: 0.85rem; }
-            .btn-banco-itv-nav span { display: none; } /* Em telas muito pequenas, mostra só o ícone */
-            .btn-banco-itv-nav { padding: 0 14px !important; }
+            .btn-banco-itv-nav span, .btn-revenda-nav span { display: none; }
+            .btn-banco-itv-nav, .btn-revenda-nav { padding: 0 14px !important; }
         }
         @media (min-width: 577px) {
-            .btn-banco-itv-nav span { display: inline; }
+            .btn-banco-itv-nav span, .btn-revenda-nav span { display: inline; }
         }
     </style>
 </head>
@@ -508,14 +533,18 @@
     </div>
 </div>
 
-<!-- NOVA NAVBAR FIXA NA PARTE INFERIOR COM BOTÃO BANCO ITV ADICIONADO -->
+<!-- NAVBAR FIXA NA PARTE INFERIOR COM BOTÃO REVENDA E BANCO ITV -->
 <nav class="navbar">
     <div class="navbar-inferior">
         <div class="nav-left">
             <button class="btn-menu-bottom" onclick="openNav()"><i class="bi bi-list"></i></button>
         </div>
-        <div class="nav-center" style="gap: 12px;">
-            <button class="btn btn-add-fixo" onclick="showModalCadastro()" title="Novo Cliente">
+        <div class="nav-center">
+            <button class="btn btn-revenda-nav" id="btnNavRevenda" onclick="mudarViewPrincipal('revenda')" title="Revenda">
+                <i class="bi bi-people-fill"></i>
+                <span>REVENDA</span>
+            </button>
+            <button class="btn btn-add-fixo" onclick="abrirModalAdicionar()" title="Adicionar Novo">
                 <i class="bi bi-plus-lg"></i>
             </button>
             <button class="btn btn-banco-itv-nav" onclick="abrirBancoItv()" title="Banco ITV">
@@ -533,41 +562,56 @@
 </nav>
 
 <div class="container mt-2">
-    <div id="adminPanel" class="mb-4 p-2">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-            <h5 class="m-0"><i class="bi bi-cash-stack text-success"></i> Financeiro</h5>
-            <input type="date" id="filterMes" class="form-control w-auto bg-dark text-white border-secondary" style="max-width: 170px;">
+    
+    <!-- VIEW CLIENTES (Padrão) -->
+    <div id="viewClientes">
+        <div id="adminPanel" class="mb-4 p-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h5 class="m-0"><i class="bi bi-cash-stack text-success"></i> Financeiro</h5>
+                <input type="date" id="filterMes" class="form-control w-auto bg-dark text-white border-secondary" style="max-width: 170px;">
+            </div>
+            <div class="row g-2">
+                <div class="col-6 col-md-3"><div class="card-financeiro"><div class="stat-label">Recebido (Mês)</div><div class="stat-val" id="finRecebido">R$ 0,00</div></div></div>
+                <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #ffc107;"><div class="stat-label">A Receber</div><div class="stat-val text-warning" id="finPendente">R$ 0,00</div></div></div>
+                <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #0dcaf0;"><div class="stat-label">Total Clientes</div><div class="stat-val text-info" id="finTotalClientes">0</div></div></div>
+                <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #00ff00;"><div class="stat-label">Lucro Geral</div><div class="stat-val" id="finGeral" style="color: #00ff00;">R$ 0,00</div></div></div>
+            </div>
+            <hr class="border-secondary">
         </div>
-        <div class="row g-2">
-            <div class="col-6 col-md-3"><div class="card-financeiro"><div class="stat-label">Recebido (Mês)</div><div class="stat-val" id="finRecebido">R$ 0,00</div></div></div>
-            <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #ffc107;"><div class="stat-label">A Receber</div><div class="stat-val text-warning" id="finPendente">R$ 0,00</div></div></div>
-            <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #0dcaf0;"><div class="stat-label">Total Clientes</div><div class="stat-val text-info" id="finTotalClientes">0</div></div></div>
-            <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #00ff00;"><div class="stat-label">Lucro Geral</div><div class="stat-val" id="finGeral" style="color: #00ff00;">R$ 0,00</div></div></div>
+
+        <!-- BOTÃO BANCO ITV ACIMA DA BUSCA (OCULTO, MANTIDO NO CÓDIGO) -->
+        <button class="btn btn-success w-100 mb-3 rounded-pill fw-bold py-2" onclick="abrirBancoItv()" style="display: none; background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
+            <i class="bi bi-bank2 me-2"></i> BANCO ITV - Gestão de Empréstimos
+        </button>
+
+        <input type="text" id="search" class="form-control mb-3" placeholder="🔍 Buscar cliente por nome..." onkeyup="renderClientes()">
+
+        <div class="nav-buttons-painel" id="paineisAtivos"></div>
+
+        <div class="filter-buttons">
+            <button class="btn-small bg-primary" onclick="filterData('ativos')">ATIVOS <span id="countAtivos">0</span></button>
+            <button class="btn-small" style="background-color: orange;" onclick="filterData('vencer')">A VENCER <span id="countVencer">0</span></button>
+            <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>
+            <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
+            <button class="btn-small bg-secondary" onclick="filterData('deletados')" style="display: none;">LIXO <span id="countDel">0</span></button>
         </div>
-        <hr class="border-secondary">
+
+        <div id="listaClientes"></div>
     </div>
 
-    <!-- BOTÃO BANCO ITV ACIMA DA BUSCA (OCULTO CONFORME SOLICITADO, MAS MANTIDO NO CÓDIGO) -->
-    <button class="btn btn-success w-100 mb-3 rounded-pill fw-bold py-2" onclick="abrirBancoItv()" style="display: none; background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
-        <i class="bi bi-bank2 me-2"></i> BANCO ITV - Gestão de Empréstimos
-    </button>
-
-    <input type="text" id="search" class="form-control mb-3" placeholder="🔍 Buscar cliente por nome..." onkeyup="renderClientes()">
-
-    <div class="nav-buttons-painel" id="paineisAtivos"></div>
-
-    <div class="filter-buttons">
-        <button class="btn-small bg-primary" onclick="filterData('ativos')">ATIVOS <span id="countAtivos">0</span></button>
-        <button class="btn-small" style="background-color: orange;" onclick="filterData('vencer')">A VENCER <span id="countVencer">0</span></button>
-        <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>
-        <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
-        <button class="btn-small bg-secondary" onclick="filterData('deletados')" style="display: none;">LIXO <span id="countDel">0</span></button>
+    <!-- NOVA VIEW: REVENDA -->
+    <div id="viewRevenda" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0 text-warning"><i class="bi bi-people-fill"></i> Gestão de Revenda</h5>
+            <button class="btn btn-sm btn-outline-light" onclick="mudarViewPrincipal('clientes')"><i class="bi bi-arrow-left"></i> Voltar</button>
+        </div>
+        <input type="text" id="searchRevenda" class="form-control mb-3" placeholder="🔍 Buscar revendedor..." onkeyup="renderRevendas()">
+        <div id="listaRevendas"></div>
     </div>
 
-    <div id="listaClientes"></div>
 </div>
 
-<!-- Modal Cadastro/Edição -->
+<!-- Modal Cadastro/Edição de Cliente -->
 <div class="modal fade" id="modalCadastro" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content bg-dark text-white">
@@ -598,6 +642,31 @@
     </div>
 </div>
 
+<!-- NOVO: Modal Cadastro/Edição de Revenda (COM CAMPO WHATSAPP ADICIONADO) -->
+<div class="modal fade" id="modalRevenda" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary"><h5 class="modal-title text-warning">👥 Revendedor</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" id="revEditId">
+                <label class="small">Nome:</label><input type="text" id="rNome" class="form-control mb-2">
+                <label class="small">WhatsApp (com DDD):</label><input type="tel" id="rTel" class="form-control mb-2" placeholder="55999999999">
+                <label class="small">Painel:</label>
+                <select id="rPainel" class="form-control form-select mb-2">
+                    <option value="central">📡 CENTRAL</option>
+                    <option value="warez">⚡ WAREZ</option>
+                    <option value="zeus">🔥 ZEUS</option>
+                    <option value="itvplayer">🎬 ITVPlayer</option>
+                </select>
+                <label class="small">Usuário:</label><input type="text" id="rUser" class="form-control mb-2">
+                <label class="small">Senha:</label><input type="text" id="rPass" class="form-control mb-2">
+                <label class="small">Link do Painel:</label><input type="text" id="rLink" class="form-control mb-2" placeholder="https://...">
+                <button class="btn btn-warning w-100 mt-2 rounded-pill text-dark fw-bold" onclick="saveRevenda()">Salvar Revendedor</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Ações do Cliente (abre ao clicar no card) -->
 <div class="modal fade" id="modalAcoes" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -619,7 +688,7 @@
 </div>
 
 <!-- ========================================================================
-     NOVO MODAL: BANCO ITV (Aplicativo de Empréstimos)
+     MODAL: BANCO ITV (Aplicativo de Empréstimos)
      ======================================================================== -->
 <div class="modal fade modal-banco-itv" id="modalBancoItv" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -633,14 +702,12 @@
             </div>
             
             <div class="px-3 px-md-4">
-                <!-- Navegação Interna do App -->
                 <div class="banco-nav">
                     <button class="banco-nav-btn active" onclick="mudarViewBanco('dashboard', this)"><i class="bi bi-pie-chart me-1"></i> Painel</button>
                     <button class="banco-nav-btn" onclick="mudarViewBanco('lista', this)"><i class="bi bi-people me-1"></i> Clientes</button>
                     <button class="banco-nav-btn" onclick="mudarViewBanco('novo', this)"><i class="bi bi-plus-circle me-1"></i> Novo</button>
                 </div>
 
-                <!-- VIEW 1: DASHBOARD FINANCEIRO -->
                 <div id="view-dashboard" class="view-section active">
                     <div class="row g-3 mb-4">
                         <div class="col-6 col-md-3">
@@ -672,23 +739,19 @@
                     <div id="listaAtrasadosBanco"></div>
                 </div>
 
-                <!-- VIEW 2: LISTA DE CLIENTES -->
                 <div id="view-lista" class="view-section">
                     <input type="text" id="searchBanco" class="form-control mb-3" placeholder="🔍 Buscar no Banco ITV..." onkeyup="renderizarListaBanco()">
                     <div id="listaEmprestimosBanco"></div>
                 </div>
 
-                <!-- VIEW 3: NOVO EMPRÉSTIMO -->
                 <div id="view-novo" class="view-section">
                     <div class="fintech-card">
                         <h5 class="mb-3"><i class="bi bi-file-earmark-plus me-2"></i>Cadastrar Novo Empréstimo</h5>
                         <input type="hidden" id="bancoEditId">
                         <label class="small text-secondary">Nome Completo:</label>
                         <input type="text" id="bancoNome" class="form-control mb-2">
-                        
                         <label class="small text-secondary">WhatsApp (com DDD):</label>
                         <input type="tel" id="bancoTelefone" class="form-control mb-2" placeholder="55999999999">
-                        
                         <div class="row g-2 mb-2">
                             <div class="col-6">
                                 <label class="small text-secondary">Valor Emprestado (R$):</label>
@@ -699,14 +762,12 @@
                                 <input type="number" id="bancoJuros" class="form-control" step="0.01" value="0" oninput="calcularTotalBanco()">
                             </div>
                         </div>
-                        
                         <div class="fintech-card bg-dark border-primary mb-2">
                             <div class="d-flex justify-content-between">
                                 <span class="text-secondary">Valor Total a Receber:</span>
                                 <span class="fw-bold text-success" id="bancoValorTotalDisplay">R$ 0,00</span>
                             </div>
                         </div>
-
                         <div class="row g-2 mb-2">
                             <div class="col-6">
                                 <label class="small text-secondary">Nº de Parcelas:</label>
@@ -717,16 +778,13 @@
                                 <input type="date" id="bancoDataVenc" class="form-control">
                             </div>
                         </div>
-
                         <label class="small text-secondary">Observações:</label>
                         <textarea id="bancoObs" class="form-control mb-3" rows="2"></textarea>
-
                         <button class="btn btn-primary w-100 py-2 fw-bold rounded-pill" onclick="salvarEmprestimo()">
                             <i class="bi bi-check-circle me-2"></i>Salvar Empréstimo
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -751,6 +809,7 @@
     const db = firebase.firestore();
 
     let clientes = [];
+    let revendas = [];
     let config = { 
         msg: "", 
         p1: "", p2: "", p3: "", 
@@ -764,6 +823,170 @@
     };
     let currentFilter = 'ativos';
     let usuarioLogadoUid = null;
+    let viewPrincipal = 'clientes';
+
+    // =========================================================================
+    // FUNÇÕES DE NAVEGAÇÃO PRINCIPAL (CLIENTES / REVENDA)
+    // =========================================================================
+    function mudarViewPrincipal(view) {
+        viewPrincipal = view;
+        const btnRevenda = document.getElementById('btnNavRevenda');
+        
+        if (view === 'revenda') {
+            document.getElementById('viewClientes').style.display = 'none';
+            document.getElementById('viewRevenda').style.display = 'block';
+            btnRevenda.innerHTML = '<i class="bi bi-arrow-left"></i> <span>VOLTAR</span>';
+            btnRevenda.classList.add('voltar');
+            btnRevenda.onclick = () => mudarViewPrincipal('clientes');
+            renderRevendas();
+        } else {
+            document.getElementById('viewClientes').style.display = 'block';
+            document.getElementById('viewRevenda').style.display = 'none';
+            btnRevenda.innerHTML = '<i class="bi bi-people-fill"></i> <span>REVENDA</span>';
+            btnRevenda.classList.remove('voltar');
+            btnRevenda.onclick = () => mudarViewPrincipal('revenda');
+            renderClientes();
+        }
+    }
+
+    function abrirModalAdicionar() {
+        if (viewPrincipal === 'revenda') {
+            showModalRevenda();
+        } else {
+            showModalCadastro();
+        }
+    }
+
+    // =========================================================================
+    // FUNÇÕES DE REVENDA
+    // =========================================================================
+    function showModalRevenda(id = "") {
+        if(id === "") {
+            document.getElementById('revEditId').value = "";
+            document.getElementById('rNome').value = "";
+            document.getElementById('rTel').value = "";
+            document.getElementById('rPainel').value = "central";
+            document.getElementById('rUser').value = "";
+            document.getElementById('rPass').value = "";
+            document.getElementById('rLink').value = "";
+        }
+        new bootstrap.Modal(document.getElementById('modalRevenda')).show();
+    }
+
+    function saveRevenda() {
+        if(!usuarioLogadoUid) return;
+        const id = document.getElementById('revEditId').value;
+        const revendaData = {
+            nome: document.getElementById('rNome').value,
+            tel: document.getElementById('rTel').value,
+            painel: document.getElementById('rPainel').value,
+            user: document.getElementById('rUser').value,
+            pass: document.getElementById('rPass').value,
+            link: document.getElementById('rLink').value,
+            status: 'ativo',
+            dataCriacao: id ? (revendas.find(r => r.id === id)?.dataCriacao || new Date().toISOString()) : new Date().toISOString()
+        };
+        const modalEl = document.getElementById('modalRevenda');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        
+        if(id === "") {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("revendas").add(revendaData).then(() => {
+                modal.hide();
+            });
+        } else {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("revendas").doc(id).set(revendaData).then(() => {
+                modal.hide();
+            });
+        }
+    }
+
+    function renderRevendas() {
+        const listaDiv = document.getElementById('listaRevendas');
+        const searchTerm = (document.getElementById('searchRevenda').value || "").toLowerCase();
+        listaDiv.innerHTML = "";
+        
+        let encontrados = 0;
+        revendas.forEach(r => {
+            if(!r.nome.toLowerCase().includes(searchTerm)) return;
+            encontrados++;
+            
+            listaDiv.innerHTML += `
+                <div class="card-cliente" onclick="editarRevenda('${r.id}')">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap">
+                        <h5 class="mb-1 text-warning">${r.nome}</h5>
+                        <span class="badge bg-secondary">${(r.painel || 'central').toUpperCase()}</span>
+                    </div>
+                    <div class="cliente-info">
+                        <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${r.user || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Senha:</span><span class="info-value">${r.pass || '-'}</span></div>
+                        <div class="info-item info-full"><span class="info-label">Link:</span><span class="info-value text-info" style="font-size:0.7rem;">${r.link || '-'}</span></div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2" onclick="event.stopPropagation()">
+                        <button class="btn btn-sm flex-fill" style="background-color:#25D366;" onclick="enviarWhatsAppRevenda('${r.id}')"><i class="bi bi-whatsapp"></i> WhatsApp</button>
+                        <button class="btn btn-sm btn-info flex-fill" onclick="copiarLinkRevenda('${r.link || ''}')"><i class="bi bi-link-45deg"></i> Copiar</button>
+                        <button class="btn btn-sm btn-danger flex-fill" onclick="excluirRevenda('${r.id}')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if (encontrados === 0) {
+            listaDiv.innerHTML = '<div class="text-center text-secondary py-4">Nenhum revendedor cadastrado.</div>';
+        }
+    }
+
+    function editarRevenda(id) {
+        let r = revendas.find(i => i.id === id);
+        if(r) {
+            document.getElementById('revEditId').value = r.id;
+            document.getElementById('rNome').value = r.nome || "";
+            document.getElementById('rTel').value = r.tel || "";
+            document.getElementById('rPainel').value = r.painel || "central";
+            document.getElementById('rUser').value = r.user || "";
+            document.getElementById('rPass').value = r.pass || "";
+            document.getElementById('rLink').value = r.link || "";
+            new bootstrap.Modal(document.getElementById('modalRevenda')).show();
+        }
+    }
+
+    // NOVA FUNÇÃO: Enviar WhatsApp com informações do revendedor
+    function enviarWhatsAppRevenda(id) {
+        const r = revendas.find(i => i.id === id);
+        if(!r) return alert("Revendedor não encontrado!");
+        if(!r.tel) return alert("WhatsApp não cadastrado para este revendedor!");
+        
+        // Determina o nome do painel
+        let nomePainel = (r.painel || 'central').toUpperCase();
+        if (r.painel === 'central') nomePainel = config.nomePainel1 || 'CENTRAL';
+        else if (r.painel === 'warez') nomePainel = config.nomePainel2 || 'WAREZ';
+        else if (r.painel === 'zeus') nomePainel = config.nomePainel3 || 'ZEUS';
+        else if (r.painel === 'itvplayer') nomePainel = 'ITVPlayer';
+        
+        const msg = `📺 *DADOS DE ACESSO - REVENDA ITV*\n\n` +
+                    `👤 *Nome:* ${r.nome || '-'}\n` +
+                    `📡 *Painel:* ${nomePainel}\n` +
+                    `🔑 *Usuário:* ${r.user || '-'}\n` +
+                    `🔐 *Senha:* ${r.pass || '-'}\n` +
+                    `🔗 *Link do Painel:* ${r.link || '-'}\n\n` +
+                    `_Mantenha essas informações em segurança._`;
+        
+        window.open(`https://wa.me/${r.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+    }
+
+    function copiarLinkRevenda(link) {
+        if(!link) return alert("Link não informado!");
+        navigator.clipboard.writeText(link).then(() => {
+            alert("✅ Link copiado para a área de transferência!");
+        }).catch(() => {
+            prompt("Copie o link manualmente:", link);
+        });
+    }
+
+    function excluirRevenda(id) {
+        if(confirm("Tem certeza que deseja excluir este revendedor permanentemente?")) {
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("revendas").doc(id).delete();
+        }
+    }
 
     // =========================================================================
     // VARIÁVEIS E FUNÇÕES DO BANCO ITV
@@ -823,8 +1046,6 @@
             dataCriacao: new Date().toISOString()
         };
 
-        const modalEl = document.getElementById('modalBancoItv');
-        
         if(id === "") {
             db.collection("usuarios").doc(usuarioLogadoUid).collection("emprestimos").add(dados).then(() => {
                 limparFormBanco();
@@ -855,7 +1076,6 @@
     function renderizarDashboardBanco() {
         let totalEmprestado = 0, totalRecebido = 0, totalPendente = 0, totalLucro = 0;
         let atrasadosHtml = '';
-
         const hoje = new Date();
 
         emprestimos.forEach(e => {
@@ -902,7 +1122,6 @@
         document.getElementById('bancoTotalRecebido').innerText = totalRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         document.getElementById('bancoTotalPendente').innerText = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         document.getElementById('bancoTotalLucro').innerText = totalLucro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        
         document.getElementById('listaAtrasadosBanco').innerHTML = atrasadosHtml || '<div class="text-center text-secondary py-3">Nenhum empréstimo atrasado. 🎉</div>';
     }
 
@@ -986,13 +1205,11 @@
         if(!e) return;
         const parcelas = parseInt(e.parcelas) || 1;
         const parcelasPagas = parseInt(e.parcelasPagas) || 0;
-        
         if(parcelasPagas >= parcelas) return alert("Este empréstimo já está quitado!");
 
         if(confirm(`Confirmar recebimento da parcela ${parcelasPagas + 1} de ${e.nome}?`)) {
             const novasParcelasPagas = parcelasPagas + 1;
             const novoStatus = novasParcelasPagas >= parcelas ? 'pago' : 'ativo';
-            
             let novaDataVencISO = e.dataVencimento;
             if (e.dataVencimento) {
                 let partes = e.dataVencimento.split('-');
@@ -1016,17 +1233,13 @@
                     const pendente = Math.max(0, parseFloat(e.valorTotal) - (valorParcela * novasParcelasPagas));
                     const pendenteFmt = pendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     const proximaDataFmt = formatarDataBR(novaDataVencISO);
-                    
                     const proximaDataTexto = novoStatus === 'pago' ? 'EMPRÉSTIMO QUITADO! 🎉' : proximaDataFmt;
 
                     const msg = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩\n✅*BANCO ITV* - 𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nOlá ${e.nome},\nValor do Empréstimo R$: ${valorTotalFmt}.\n\nRecebemos sua parcela nº: ${novasParcelasPagas}/${parcelas}.\nValor da Parcela R$: ${valorParcelaFmt}.\nValor Pendente R$: ${pendenteFmt}.\nData do Próximo Parcela: ${proximaDataTexto}`;
-                    
                     window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
                 }
                 alert("✅ Parcela registrada com sucesso!");
-            }).catch(err => {
-                alert("Erro ao registrar parcela: " + err.message);
-            });
+            }).catch(err => alert("Erro ao registrar parcela: " + err.message));
         }
     }
 
@@ -1041,35 +1254,7 @@
         const valorParcela = valorTotal / parcelas;
         const valorPendente = Math.max(0, valorTotal - (valorParcela * parcelasPagas));
         
-        const valorTotalFmt = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        const valorParcelaFmt = valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        const valorPendenteFmt = valorPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        const dataVencFmt = formatarDataBR(e.dataVencimento);
-
-        const msg = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩
-⛔️*BANCO ITV* -  𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 ℕ𝔸𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!
-
-Olá ${e.nome},
-Valor do Empréstimo R$: ${valorTotalFmt}.
-
-Sua parcela nº: ${parcelasPagas + 1}/${parcelas}.
-Valor da Parcela R$: ${valorParcelaFmt}.
-Valor Pendente R$: ${valorPendenteFmt}.
-Data: ${dataVencFmt}
-
-Por favor, regularize para evitar juros adicionais, 
-
-Faça um Pix 💠
-💰VALOR: ${valorParcelaFmt}
-
-🏦Banco: *Pic Pay*
-👤Nome: *Maria lucilene* 
-📲Opção: *Celular*
-🔑 Chaves: *(85)996498573*
-
-_Após o pagamento, encaminhar o comprovante.
-🤝 Obrigado!.`;
-        
+        const msg = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩\n⛔️*BANCO ITV* - 𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 ℕ𝔸𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nOlá ${e.nome},\nValor do Empréstimo R$: ${valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\n\nSua parcela nº: ${parcelasPagas + 1}/${parcelas}.\nValor da Parcela R$: ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\nValor Pendente R$: ${valorPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.\nData: ${formatarDataBR(e.dataVencimento)}\n\nPor favor, regularize para evitar juros adicionais.\n\nFaça um Pix 💠\n💰VALOR: ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n\n🏦Banco: *Pic Pay*\n👤Nome: *Maria lucilene* \n📲Opção: *Celular*\n🔑 Chaves: *(85)996498573*\n\n_Após o pagamento, encaminhar o comprovante.\n🤝 Obrigado!.`;
         window.open(`https://wa.me/${e.telefone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
     }
 
@@ -1149,7 +1334,6 @@ _Após o pagamento, encaminhar o comprovante.
         document.getElementById('credZeusDisplay').innerText = config.credZeus || 0;
     }
 
-    // ✅ NOVO: painel "itvplayer" não consome créditos (livre)
     function consumirCredito(painel) {
         if (painel === 'itvplayer') return true;
         const chave = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
@@ -1214,10 +1398,17 @@ _Após o pagamento, encaminhar o comprovante.
             atualizarBadgesCreditos();
             renderPaineisAtivos();
         });        
+        
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").onSnapshot(snapshot => {
             clientes = [];
             snapshot.forEach(doc => { clientes.push({ id: doc.id, ...doc.data() }); });
             renderClientes();
+        });
+
+        db.collection("usuarios").doc(usuarioLogadoUid).collection("revendas").onSnapshot(snapshot => {
+            revendas = [];
+            snapshot.forEach(doc => { revendas.push({ id: doc.id, ...doc.data() }); });
+            renderRevendas();
         });
     }
 
@@ -1320,9 +1511,6 @@ _Após o pagamento, encaminhar o comprovante.
         return dataISO;
     }
     
-    // ============================================================
-    // RENOVAR CLIENTE - Nova data = Data Vencimento + 1 mês
-    // ============================================================
     function renovarCliente(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
@@ -1345,8 +1533,6 @@ _Após o pagamento, encaminhar o comprovante.
 
         const novaDataBR = formatarDataBR(novaDataISO);
         const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
-
-        // Provedor = Nome do painel onde será renovado (inclui ITVPlayer)
         let nomePainelProvedor = 'ITV';
         if (painel === 'central') nomePainelProvedor = config.nomePainel1 || 'CENTRAL';
         else if (painel === 'warez') nomePainelProvedor = config.nomePainel2 || 'WAREZ';
@@ -1577,7 +1763,11 @@ _Após o pagamento, encaminhar o comprovante.
             document.getElementById('cPainel').value = c.painel || 'central';
             new bootstrap.Modal(document.getElementById('modalCadastro')).show();
         }
-    }    
+    }
+
+    // =========================================================================
+    // EXPORTAÇÃO DE FUNÇÕES GLOBAIS
+    // =========================================================================
     window.renovarCliente = renovarCliente;
     window.marcarAReceber = marcarAReceber;
     window.pagarCliente = pagarCliente;
@@ -1597,7 +1787,7 @@ _Após o pagamento, encaminhar o comprovante.
     window.ajustarCredito = ajustarCredito;
     window.atualizarDisplayCredito = atualizarDisplayCredito;
     
-    // Expor funções do Banco ITV globalmente
+    // Funções do Banco ITV
     window.abrirBancoItv = abrirBancoItv;
     window.mudarViewBanco = mudarViewBanco;
     window.calcularTotalBanco = calcularTotalBanco;
@@ -1606,6 +1796,16 @@ _Após o pagamento, encaminhar o comprovante.
     window.cobrarWhatsAppBanco = cobrarWhatsAppBanco;
     window.excluirEmprestimo = excluirEmprestimo;
     window.editarEmprestimo = editarEmprestimo;
+
+    // Funções de Revenda e Navegação
+    window.mudarViewPrincipal = mudarViewPrincipal;
+    window.abrirModalAdicionar = abrirModalAdicionar;
+    window.showModalRevenda = showModalRevenda;
+    window.saveRevenda = saveRevenda;
+    window.editarRevenda = editarRevenda;
+    window.enviarWhatsAppRevenda = enviarWhatsAppRevenda;
+    window.copiarLinkRevenda = copiarLinkRevenda;
+    window.excluirRevenda = excluirRevenda;
 </script>
 </body>
 </html>

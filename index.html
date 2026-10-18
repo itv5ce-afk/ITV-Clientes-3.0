@@ -44,7 +44,9 @@
         .modal-acoes-row { display: flex; gap: 8px; }
         .modal-acoes-row .btn { flex: 1; font-size: 0.78rem; font-weight: 600; padding: 10px 4px; border-radius: 12px; border: none; color: white; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
-        .navbar-inferior {            display: flex;            align-items: center;
+        .navbar-inferior {
+            display: flex;
+            align-items: center;
             justify-content: space-between;
             width: 100%;
             gap: 10px;
@@ -79,6 +81,27 @@
             margin-top: -20px;
         }
         .btn-add-fixo:active { transform: scale(0.95); }
+        
+        /* Estilo do botão BANCO ITV na navbar inferior */
+        .btn-banco-itv-nav {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+            color: white !important;
+            border: none;
+            border-radius: 26px !important;
+            height: 52px;
+            padding: 0 16px !important;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 -2px 12px rgba(13, 110, 253, 0.5);
+            margin-top: -20px;
+            transition: transform 0.1s ease;
+        }
+        .btn-banco-itv-nav:active { transform: scale(0.95); }
+        .btn-banco-itv-nav i { font-size: 1.3rem; }
+
         .navbar-brand-bottom {
             color: #fff !important;
             font-weight: 600;
@@ -92,8 +115,10 @@
             color: #aaa;
             font-weight: 400;
         }
-        .btn-menu-bottom {            background: transparent;
-            border: none;            color: #fff;
+        .btn-menu-bottom {
+            background: transparent;
+            border: none;
+            color: #fff;
             font-size: 1.6rem;
             padding: 4px 8px;
         }
@@ -324,10 +349,16 @@
         .view-section.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        @media (max-width: 576px) {            .card-cliente h5 { font-size: 1rem; }
+        @media (max-width: 576px) {
+            .card-cliente h5 { font-size: 1rem; }
             .stat-val { font-size: 1.2rem; }
             .modal-acoes-row .btn { font-size: 0.72rem; padding: 9px 2px; }
             .navbar-brand-bottom { font-size: 0.85rem; }
+            .btn-banco-itv-nav span { display: none; } /* Em telas muito pequenas, mostra só o ícone */
+            .btn-banco-itv-nav { padding: 0 14px !important; }
+        }
+        @media (min-width: 577px) {
+            .btn-banco-itv-nav span { display: inline; }
         }
     </style>
 </head>
@@ -373,7 +404,8 @@
         </button>
         <div class="menu-secao" id="secCobranca">
             <h6>📢 Mensagem de Cobrança</h6>
-            <textarea id="cfgMsg" class="form-control mb-2" rows="3" placeholder="Digite a mensagem que será enviada..."></textarea>            <button class="btn btn-success w-100" onclick="saveSettings()">💾 Salvar Mensagem</button>
+            <textarea id="cfgMsg" class="form-control mb-2" rows="3" placeholder="Digite a mensagem que será enviada..."></textarea>
+            <button class="btn btn-success w-100" onclick="saveSettings()">💾 Salvar Mensagem</button>
         </div>
 
         <!-- 2° Botão - Conf Painel -->
@@ -476,14 +508,20 @@
     </div>
 </div>
 
-<!-- NOVA NAVBAR FIXA NA PARTE INFERIOR -->
+<!-- NOVA NAVBAR FIXA NA PARTE INFERIOR COM BOTÃO BANCO ITV ADICIONADO -->
 <nav class="navbar">
     <div class="navbar-inferior">
         <div class="nav-left">
             <button class="btn-menu-bottom" onclick="openNav()"><i class="bi bi-list"></i></button>
         </div>
-        <div class="nav-center">
-            <button class="btn btn-add-fixo" onclick="showModalCadastro()"><i class="bi bi-plus-lg"></i></button>
+        <div class="nav-center" style="gap: 12px;">
+            <button class="btn btn-add-fixo" onclick="showModalCadastro()" title="Novo Cliente">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+            <button class="btn btn-banco-itv-nav" onclick="abrirBancoItv()" title="Banco ITV">
+                <i class="bi bi-bank2"></i>
+                <span>BANCO ITV</span>
+            </button>
         </div>
         <div class="nav-right">
             <div class="navbar-brand-bottom text-end">
@@ -509,8 +547,8 @@
         <hr class="border-secondary">
     </div>
 
-    <!-- NOVO: BOTÃO BANCO ITV ACIMA DA BUSCA -->
-    <button class="btn btn-success w-100 mb-3 rounded-pill fw-bold py-2" onclick="abrirBancoItv()" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
+    <!-- BOTÃO BANCO ITV ACIMA DA BUSCA (OCULTO CONFORME SOLICITADO, MAS MANTIDO NO CÓDIGO) -->
+    <button class="btn btn-success w-100 mb-3 rounded-pill fw-bold py-2" onclick="abrirBancoItv()" style="display: none; background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
         <i class="bi bi-bank2 me-2"></i> BANCO ITV - Gestão de Empréstimos
     </button>
 
@@ -521,7 +559,8 @@
     <div class="filter-buttons">
         <button class="btn-small bg-primary" onclick="filterData('ativos')">ATIVOS <span id="countAtivos">0</span></button>
         <button class="btn-small" style="background-color: orange;" onclick="filterData('vencer')">A VENCER <span id="countVencer">0</span></button>
-        <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>        <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
+        <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>
+        <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
         <button class="btn-small bg-secondary" onclick="filterData('deletados')" style="display: none;">LIXO <span id="countDel">0</span></button>
     </div>
 
@@ -574,7 +613,8 @@
                 <div class="cliente-info mb-3" id="acoesInfoResumo"></div>
                 <hr class="border-secondary">
                 <div class="modal-acoes-grid" id="acoesGrid"></div>
-            </div>        </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -700,7 +740,8 @@
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDd_rtYsto9_0zp8pxYwXRs4XRRip7k3uc",
-      authDomain: "itvcontrol.firebaseapp.com",      projectId: "itvcontrol",
+      authDomain: "itvcontrol.firebaseapp.com",
+      projectId: "itvcontrol",
       storageBucket: "itvcontrol.firebasestorage.app",
       messagingSenderId: "291731890067",
       appId: "1:291731890067:web:e75e79766765d861db5266"
@@ -1090,7 +1131,8 @@ _Após o pagamento, encaminhar o comprovante.
 
     function ajustarCredito(painel, delta) {
         const inputId = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
-        const input = document.getElementById(inputId);        let val = parseInt(input.value) || 0;
+        const input = document.getElementById(inputId);
+        let val = parseInt(input.value) || 0;
         val = Math.max(0, val + delta);
         input.value = val;
         atualizarDisplayCredito(painel);
@@ -1231,7 +1273,8 @@ _Após o pagamento, encaminhar o comprovante.
         new bootstrap.Modal(document.getElementById('modalCadastro')).show();
     }
 
-    function saveCliente() {        if(!usuarioLogadoUid) return;
+    function saveCliente() {
+        if(!usuarioLogadoUid) return;
         const id = document.getElementById('editId').value;
         const clienteData = {
             nome: document.getElementById('cNome').value,
@@ -1240,7 +1283,8 @@ _Após o pagamento, encaminhar o comprovante.
             valor: parseFloat(document.getElementById('cValor').value) || 0,
             data: document.getElementById('cData').value,
             serv: document.getElementById('cServ').value,
-            url: document.getElementById('cUrl').value,            tel: document.getElementById('cTel').value,
+            url: document.getElementById('cUrl').value,
+            tel: document.getElementById('cTel').value,
             obs: document.getElementById('cObs').value,
             painel: document.getElementById('cPainel').value || 'central',
             status: 'ativo'
@@ -1251,7 +1295,8 @@ _Após o pagamento, encaminhar o comprovante.
         if(id === "") {
             db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").add(clienteData).then(() => modal.hide());
         } else {
-            const original = clientes.find(c => c.id === id);            if(original) {
+            const original = clientes.find(c => c.id === id);
+            if(original) {
                 clienteData.status = original.status;
                 if(original.ultimoPagamento) clienteData.ultimoPagamento = original.ultimoPagamento;
             }
@@ -1322,7 +1367,8 @@ _Após o pagamento, encaminhar o comprovante.
     }
     
     function marcarAReceber(id) {
-        const cliente = clientes.find(c => c.id === id);        if(!cliente) return;
+        const cliente = clientes.find(c => c.id === id);
+        if(!cliente) return;
         const painel = cliente.painel || 'central';
         if(!consumirCredito(painel)) return;
         const novaDataISO = addOneMonthFromToday();
@@ -1333,7 +1379,8 @@ _Após o pagamento, encaminhar o comprovante.
         else alert("Número não cadastrado!");
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
             data: novaDataISO,
-            status: 'apagar'        });
+            status: 'apagar'
+        });
     }
     
     function pagarCliente(id) {
@@ -1351,7 +1398,8 @@ _Após o pagamento, encaminhar o comprovante.
     }
 
     function compartilharCliente(id) {
-        const c = clientes.find(i => i.id === id);        if(!c) return;
+        const c = clientes.find(i => i.id === id);
+        if(!c) return;
         if(!c.tel) return alert("Telefone não cadastrado!");
         const msg = `📺 *Dados de Acesso ITV*\n\n👤 Usuário: ${c.user || '-'}\n🔑 Senha: ${c.pass || '-'}\n🔗 Url: ${c.url || '-'}`;
         window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
@@ -1378,7 +1426,8 @@ _Após o pagamento, encaminhar o comprovante.
         
         if(c.status === 'deletado') {
             grid.innerHTML = `
-                <div class="modal-acoes-row">                    <button class="btn btn-info" onclick="restore('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">♻️ RESTAURAR</button>
+                <div class="modal-acoes-row">
+                    <button class="btn btn-info" onclick="restore('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">♻️ RESTAURAR</button>
                     <button class="btn btn-danger" onclick="hardDelete('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🗑️ EXCLUIR PERM</button>
                 </div>
             `;
@@ -1394,7 +1443,8 @@ _Após o pagamento, encaminhar o comprovante.
                 <div class="modal-acoes-row">
                     <button class="btn" style="background-color:#25D366;" onclick="openWhatsApp('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();"><i class="bi bi-whatsapp"></i> ZAP</button>
                     <button class="btn btn-success" onclick="sendCobrancaZap('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">💰 COBRAR</button>
-                    <button class="btn btn-warning text-dark" onclick="renovarCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🔄 RENOVAR</button>                    <button class="btn btn-secondary" onclick="marcarAReceber('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">⏳ A RECEBER</button>
+                    <button class="btn btn-warning text-dark" onclick="renovarCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🔄 RENOVAR</button>
+                    <button class="btn btn-secondary" onclick="marcarAReceber('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">⏳ A RECEBER</button>
                 </div>
                 <div class="modal-acoes-row">
                     <button class="btn btn-info" onclick="compartilharCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">📤 COMPARTILHAR</button>
@@ -1423,7 +1473,8 @@ _Após o pagamento, encaminhar o comprovante.
                 else if(diffDays <= 3) statusReal = 'vencer';
                 else statusReal = 'ativo';
             }
-            if(statusReal === 'ativo') counts.ativos++;            if(statusReal === 'vencer') counts.vencer++;
+            if(statusReal === 'ativo') counts.ativos++;
+            if(statusReal === 'vencer') counts.vencer++;
             if(statusReal === 'expirado') counts.exp++;
             if(c.status === 'apagar') counts.apagar++;
             if(c.status === 'deletado') counts.del++;
@@ -1443,7 +1494,8 @@ _Após o pagamento, encaminhar o comprovante.
             listaDiv.innerHTML += `
                 <div class="card-cliente" onclick="abrirAcoesCliente('${c.id}')">
                     <div class="d-flex justify-content-between align-items-start flex-wrap">
-                        <h5 class="mb-1">${c.nome}</h5>                        <span class="badge ${badgeClass}">${dataExib}</span>
+                        <h5 class="mb-1">${c.nome}</h5>
+                        <span class="badge ${badgeClass}">${dataExib}</span>
                     </div>
                     <div class="cliente-info">
                         <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${c.user || '-'}</span></div>
@@ -1462,7 +1514,8 @@ _Após o pagamento, encaminhar o comprovante.
         renderFinanceiro();
     }
     
-    function sendCobrancaZap(id) {        const c = clientes.find(i => i.id === id);
+    function sendCobrancaZap(id) {
+        const c = clientes.find(i => i.id === id);
         if(!c) return;
         const msgCobranca = `📩 𝕞𝕤𝕘-𝕒𝕦𝕥𝕠𝕞á𝕥𝕚𝕔𝕒📩\n🚨🚨🚨\nOlá ${c.nome}!!\nSua lista de TV expirou em ${c.data.split('-').reverse().join('/')}\nPara renovar, faça um Pix 💠\n💰Plano: R$ ${c.valor.toFixed(2)}\n${config.msg || ""}`;
         if(c.tel) window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msgCobranca)}`);
@@ -1517,7 +1570,8 @@ _Após o pagamento, encaminhar o comprovante.
     function editCliente(id) {
         let c = clientes.find(i => i.id === id);
         if(c) {
-            document.getElementById('editId').value = c.id;            document.getElementById('cNome').value = c.nome; document.getElementById('cUser').value = c.user; document.getElementById('cPass').value = c.pass;
+            document.getElementById('editId').value = c.id;
+            document.getElementById('cNome').value = c.nome; document.getElementById('cUser').value = c.user; document.getElementById('cPass').value = c.pass;
             document.getElementById('cValor').value = c.valor; document.getElementById('cData').value = c.data; document.getElementById('cServ').value = c.serv || '';
             document.getElementById('cUrl').value = c.url; document.getElementById('cTel').value = c.tel; document.getElementById('cObs').value = c.obs;
             document.getElementById('cPainel').value = c.painel || 'central';

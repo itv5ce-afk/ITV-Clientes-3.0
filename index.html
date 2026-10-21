@@ -1844,28 +1844,57 @@
                             <label class="small text-secondary">WhatsApp (com DDD):</label>
                             <input type="tel" id="bancoTelefone" class="form-control mb-2" placeholder="55999999999">
                             <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <label class="small text-secondary">Valor Emprestado (R$):</label>
-                                    <input type="number" id="bancoValor" class="form-control" step="0.01" oninput="calcularTotalBanco()">
+                                <div class="col-12">
+                                    <label class="small text-secondary">Valor do Empréstimo (R$):</label>
+                                    <input type="number" id="bancoValor" class="form-control" step="0.01" min="0" inputmode="decimal" oninput="calcularTotalBanco()">
                                 </div>
-                                <div class="col-6">
-                                    <label class="small text-secondary">Taxa de Juros (%):</label>
-                                    <input type="number" id="bancoJuros" class="form-control" step="0.01" value="0" oninput="calcularTotalBanco()">
+                            </div>
+                            <input type="hidden" id="bancoJuros" value="0">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="bancoParcelasAtivo" onchange="alternarParcelasBanco()">
+                                <label class="form-check-label text-secondary" for="bancoParcelasAtivo">Parcelas e cálculo de juros</label>
+                            </div>
+                            <div id="bancoConfigParcelas" class="fintech-card bg-dark border-primary mb-3" style="display:none;">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12 col-sm-6">
+                                        <label class="small text-secondary">Número de parcelas (2 a 24):</label>
+                                        <select id="bancoNumeroParcelas" class="form-select" onchange="calcularTotalBanco()">
+                                            <option value="2">2 parcelas</option><option value="3">3 parcelas</option><option value="4">4 parcelas</option>
+                                            <option value="5">5 parcelas</option><option value="6">6 parcelas</option><option value="7">7 parcelas</option>
+                                            <option value="8">8 parcelas</option><option value="9">9 parcelas</option><option value="10">10 parcelas</option>
+                                            <option value="11">11 parcelas</option><option value="12">12 parcelas</option><option value="13">13 parcelas</option>
+                                            <option value="14">14 parcelas</option><option value="15">15 parcelas</option><option value="16">16 parcelas</option>
+                                            <option value="17">17 parcelas</option><option value="18">18 parcelas</option><option value="19">19 parcelas</option>
+                                            <option value="20">20 parcelas</option><option value="21">21 parcelas</option><option value="22">22 parcelas</option>
+                                            <option value="23">23 parcelas</option><option value="24">24 parcelas</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-sm-6">
+                                        <label class="small text-secondary">Acréscimo mensal por parcela extra (%):</label>
+                                        <input type="number" id="bancoTaxaPorParcela" class="form-control" min="0" step="0.01" value="0.10" oninput="calcularTotalBanco()">
+                                    </div>
                                 </div>
+                                <div class="row g-2">
+                                    <div class="col-6"><label class="small text-secondary">Juros ao mês (%):</label><input type="number" id="bancoJurosMensal" class="form-control" min="0" step="0.01" value="4.76" oninput="calcularTotalBanco()"></div>
+                                    <div class="col-6"><label class="small text-secondary">Juros ao ano (%):</label><input type="number" id="bancoJurosAnual" class="form-control" min="0" step="0.01" value="74.72" oninput="calcularTotalBanco()"></div>
+                                    <div class="col-6"><label class="small text-secondary">CET ao mês (%):</label><input type="number" id="bancoCetMensal" class="form-control" min="0" step="0.01" value="8.66" oninput="calcularTotalBanco()"></div>
+                                    <div class="col-6"><label class="small text-secondary">CET ao ano (%):</label><input type="number" id="bancoCetAnual" class="form-control" min="0" step="0.01" value="174.73" oninput="calcularTotalBanco()"></div>
+                                    <div class="col-6"><label class="small text-secondary">Seguro (%):</label><input type="number" id="bancoSeguro" class="form-control" min="0" step="0.01" value="11.15" oninput="calcularTotalBanco()"></div>
+                                    <div class="col-6"><label class="small text-secondary">IOF (%):</label><input type="number" id="bancoIOF" class="form-control" min="0" step="0.01" value="1.37" oninput="calcularTotalBanco()"></div>
+                                </div>
+                                <small class="text-secondary d-block mt-2">O acréscimo por prazo vem preenchido com 0,10% por parcela extra como exemplo e pode ser alterado. O cálculo da parcela usa juros mensais, seguro e IOF; o CET é salvo como referência editável e não é somado novamente.</small>
                             </div>
                             <div class="fintech-card bg-dark border-primary mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-secondary">Valor Total a Receber:</span>
-                                    <span class="fw-bold text-success" id="bancoValorTotalDisplay">R$ 0,00</span>
-                                </div>
+                                <div class="d-flex justify-content-between gap-2"><span class="text-secondary">Total estimado:</span><span class="fw-bold text-success" id="bancoValorTotalDisplay">R$ 0,00</span></div>
+                                <div id="bancoResumoParcelas" class="small text-secondary mt-1" style="display:none;"></div>
                             </div>
                             <div class="row g-2 mb-2">
-                                <div class="col-6">
+                                <div class="col-6" id="bancoParcelasLegadoWrap" style="display:none;">
                                     <label class="small text-secondary">Nº de Parcelas:</label>
                                     <input type="number" id="bancoParcelas" class="form-control" value="1" min="1" oninput="calcularTotalBanco()">
                                 </div>
-                                <div class="col-6">
-                                    <label class="small text-secondary">Data 1º Vencimento:</label>
+                                <div class="col-12 col-sm-6">
+                                    <label class="small text-secondary">Data da primeira prestação:</label>
                                     <input type="date" id="bancoDataVenc" class="form-control">
                                 </div>
                             </div>
@@ -2648,11 +2677,42 @@
         if (scrollArea) scrollArea.scrollTop = 0;
     }
 
+    function alternarParcelasBanco() {
+        const ativo = document.getElementById('bancoParcelasAtivo').checked;
+        document.getElementById('bancoConfigParcelas').style.display = ativo ? 'block' : 'none';
+        document.getElementById('bancoParcelasLegadoWrap').style.display = 'none';
+        calcularTotalBanco();
+    }
+
+    function valorPercentualBanco(id) {
+        const valor = parseFloat(document.getElementById(id).value);
+        return Number.isFinite(valor) && valor >= 0 ? valor : 0;
+    }
+
     function calcularTotalBanco() {
         const valor = parseFloat(document.getElementById('bancoValor').value) || 0;
-        const juros = parseFloat(document.getElementById('bancoJuros').value) || 0;
-        const total = valor + (valor * (juros / 100));
+        const ativo = document.getElementById('bancoParcelasAtivo').checked;
+        let total = 0;
+        if (ativo) {
+            const parcelas = Math.min(24, Math.max(2, parseInt(document.getElementById('bancoNumeroParcelas').value, 10) || 2));
+            const jurosMensal = valorPercentualBanco('bancoJurosMensal') + valorPercentualBanco('bancoTaxaPorParcela') * (parcelas - 2);
+            const taxa = jurosMensal / 100;
+            const seguro = valorPercentualBanco('bancoSeguro');
+            const iof = valorPercentualBanco('bancoIOF');
+            const baseFinanciada = valor * (1 + (seguro + iof) / 100);
+            const valorParcela = taxa === 0 ? baseFinanciada / parcelas : baseFinanciada * taxa / (1 - Math.pow(1 + taxa, -parcelas));
+            total = valorParcela * parcelas;
+            document.getElementById('bancoJuros').value = jurosMensal.toFixed(2);
+            document.getElementById('bancoParcelas').value = String(parcelas);
+            document.getElementById('bancoResumoParcelas').style.display = 'block';
+            document.getElementById('bancoResumoParcelas').textContent = `${parcelas}x de ${valorParcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · juros usados no cálculo: ${jurosMensal.toFixed(2).replace('.', ',')}% ao mês`;
+        } else {
+            const juros = parseFloat(document.getElementById('bancoJuros').value) || 0;
+            total = valor + (valor * (juros / 100));
+            document.getElementById('bancoResumoParcelas').style.display = 'none';
+        }
         document.getElementById('bancoValorTotalDisplay').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        return total;
     }
 
     function carregarDadosBanco() {
@@ -2670,7 +2730,8 @@
         const id = document.getElementById('bancoEditId').value;
         const valor = parseFloat(document.getElementById('bancoValor').value) || 0;
         const juros = parseFloat(document.getElementById('bancoJuros').value) || 0;
-        const valorTotal = valor + (valor * (juros / 100));
+        const parcelasAtivas = document.getElementById('bancoParcelasAtivo').checked;
+        const valorTotal = calcularTotalBanco();
         const parcelas = parseInt(document.getElementById('bancoParcelas').value) || 1;
 
         const dados = {
@@ -2680,6 +2741,14 @@
             taxaJuros: juros,
             valorTotal: valorTotal,
             parcelas: parcelas,
+            calculoParcelado: parcelasAtivas,
+            taxaJurosMensal: parcelasAtivas ? valorPercentualBanco('bancoJurosMensal') : 0,
+            taxaJurosAnual: parcelasAtivas ? valorPercentualBanco('bancoJurosAnual') : 0,
+            cetMensal: parcelasAtivas ? valorPercentualBanco('bancoCetMensal') : 0,
+            cetAnual: parcelasAtivas ? valorPercentualBanco('bancoCetAnual') : 0,
+            taxaSeguro: parcelasAtivas ? valorPercentualBanco('bancoSeguro') : 0,
+            taxaIOF: parcelasAtivas ? valorPercentualBanco('bancoIOF') : 0,
+            acrescimoPorParcela: parcelasAtivas ? valorPercentualBanco('bancoTaxaPorParcela') : 0,
             parcelasPagas: id ? (emprestimos.find(e => e.id === id)?.parcelasPagas || 0) : 0,
             dataVencimento: document.getElementById('bancoDataVenc').value,
             obs: document.getElementById('bancoObs').value,
@@ -2709,9 +2778,21 @@
         document.getElementById('bancoValor').value = "";
         document.getElementById('bancoJuros').value = "0";
         document.getElementById('bancoParcelas').value = "1";
+        document.getElementById('bancoParcelasAtivo').checked = false;
+        document.getElementById('bancoNumeroParcelas').value = "2";
+        document.getElementById('bancoTaxaPorParcela').value = "0.10";
+        document.getElementById('bancoJurosMensal').value = "4.76";
+        document.getElementById('bancoJurosAnual').value = "74.72";
+        document.getElementById('bancoCetMensal').value = "8.66";
+        document.getElementById('bancoCetAnual').value = "174.73";
+        document.getElementById('bancoSeguro').value = "11.15";
+        document.getElementById('bancoIOF').value = "1.37";
         document.getElementById('bancoDataVenc').value = "";
         document.getElementById('bancoObs').value = "";
         document.getElementById('bancoValorTotalDisplay').innerText = "R$ 0,00";
+        document.getElementById('bancoResumoParcelas').style.display = "none";
+        document.getElementById('bancoConfigParcelas').style.display = "none";
+        document.getElementById('bancoParcelasLegadoWrap').style.display = "none";
     }
 
     function renderizarDashboardBanco() {
@@ -2835,8 +2916,18 @@
         document.getElementById('bancoValor').value = e.valorEmprestado || "";
         document.getElementById('bancoJuros').value = e.taxaJuros || "0";
         document.getElementById('bancoParcelas').value = e.parcelas || "1";
+        document.getElementById('bancoParcelasAtivo').checked = !!e.calculoParcelado;
+        document.getElementById('bancoNumeroParcelas').value = String(Math.min(24, Math.max(2, parseInt(e.parcelas, 10) || 2)));
+        document.getElementById('bancoTaxaPorParcela').value = e.acrescimoPorParcela ?? "0.10";
+        document.getElementById('bancoJurosMensal').value = e.taxaJurosMensal ?? "4.76";
+        document.getElementById('bancoJurosAnual').value = e.taxaJurosAnual ?? "74.72";
+        document.getElementById('bancoCetMensal').value = e.cetMensal ?? "8.66";
+        document.getElementById('bancoCetAnual').value = e.cetAnual ?? "174.73";
+        document.getElementById('bancoSeguro').value = e.taxaSeguro ?? "11.15";
+        document.getElementById('bancoIOF').value = e.taxaIOF ?? "1.37";
         document.getElementById('bancoDataVenc').value = e.dataVencimento || "";
         document.getElementById('bancoObs').value = e.obs || '';
+        alternarParcelasBanco();
         calcularTotalBanco();
         mudarViewBanco('novo', document.querySelectorAll('#modalBancoItv .banco-nav-btn')[2]);
     }
@@ -3520,6 +3611,7 @@
     window.abrirBancoItv = abrirBancoItv;
     window.mudarViewBanco = mudarViewBanco;
     window.calcularTotalBanco = calcularTotalBanco;
+    window.alternarParcelasBanco = alternarParcelasBanco;
     window.salvarEmprestimo = salvarEmprestimo;
     window.pagarParcelaBanco = pagarParcelaBanco;
     window.cobrarWhatsAppBanco = cobrarWhatsAppBanco;

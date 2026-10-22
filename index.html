@@ -1030,6 +1030,46 @@
             font-weight: 700;
         }
         .btn-renovar-revenda:active { transform: scale(0.97); }
+
+        /* ========================================================================
+           ✅ NOVO: LISTA FINANCEIRO CLICÁVEL
+           ======================================================================== */
+        .card-financeiro.clicavel { cursor: pointer; transition: all 0.2s; }
+        .card-financeiro.clicavel:active { transform: scale(0.97); border-left-color: #00ff00; }
+        .card-financeiro.clicavel:hover { background: #2a2a2a; }
+        .desktop-stat-card.clicavel { cursor: pointer; }
+
+        .fin-lista-item {
+            background: #1a1d24;
+            border: 1px solid #2a2e38;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .fin-lista-item:hover { border-color: #9933ff; }
+        .fin-lista-item .fin-nome { color: #fff; font-weight: 600; font-size: 0.92rem; }
+        .fin-lista-item .fin-tipo { color: #888; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .fin-lista-item .fin-data { color: #aaa; font-size: 0.75rem; }
+        .fin-lista-item .fin-valor { color: #00ff00; font-weight: 700; font-size: 0.92rem; }
+
+        #modalListaFinanceiro .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 24px;
+        }
+        #modalListaFinanceiro .modal-header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            border-bottom: 1px solid #333;
+            border-radius: 24px 24px 0 0;
+            padding: 18px 22px;
+        }
+        #modalListaFinanceiro .modal-footer {
+            background: #0f0f0f;
+            border-top: 1px solid #333;
+            border-radius: 0 0 24px 24px;
+            padding: 14px 22px;
+        }
     </style>
 </head>
 <body>
@@ -1214,13 +1254,13 @@
             <div id="adminPanel" class="mb-4 p-2">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <h5 class="m-0"><i class="bi bi-cash-stack text-success"></i> Financeiro</h5>
-                    <input type="date" id="filterMes" class="form-control w-auto bg-dark text-white border-secondary" style="max-width: 170px;">
+                    <input type="date" id="filterMes" class="form-control w-auto bg-dark text-white border-secondary" style="max-width: 170px;" onchange="renderFinanceiro(); renderFinanceiroDesktop();">
                 </div>
                 <div class="row g-2">
-                    <div class="col-6 col-md-3"><div class="card-financeiro"><div class="stat-label">Recebido (Mês)</div><div class="stat-val" id="finRecebido">R$ 0,00</div></div></div>
-                    <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #ffc107;"><div class="stat-label">A Receber</div><div class="stat-val text-warning" id="finPendente">R$ 0,00</div></div></div>
+                    <div class="col-6 col-md-3"><div class="card-financeiro clicavel" onclick="abrirListaFinanceiro('recebido')" title="Ver clientes que pagaram"><div class="stat-label">Recebido (Mês)</div><div class="stat-val" id="finRecebido">R$ 0,00</div></div></div>
+                    <div class="col-6 col-md-3"><div class="card-financeiro clicavel" onclick="abrirListaFinanceiro('areceber')" style="border-left-color: #ffc107;" title="Ver clientes pendentes"><div class="stat-label">A Receber</div><div class="stat-val text-warning" id="finPendente">R$ 0,00</div></div></div>
                     <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #0dcaf0;"><div class="stat-label">Total Clientes</div><div class="stat-val text-info" id="finTotalClientes">0</div></div></div>
-                    <div class="col-6 col-md-3"><div class="card-financeiro" style="border-left-color: #00ff00;"><div class="stat-label">Lucro Geral</div><div class="stat-val" id="finGeral" style="color: #00ff00;">R$ 0,00</div></div></div>
+                    <div class="col-6 col-md-3"><div class="card-financeiro clicavel" onclick="abrirListaFinanceiro('geral')" style="border-left-color: #00ff00;" title="Ver todos os clientes"><div class="stat-label">Lucro Geral</div><div class="stat-val" id="finGeral" style="color: #00ff00;">R$ 0,00</div></div></div>
                 </div>
                 <hr class="border-secondary">
             </div>
@@ -1354,13 +1394,13 @@
             <!-- VIEW: DASHBOARD -->
             <div class="desktop-view active" id="desktopView-dashboard">
                 <div class="desktop-stats-grid">
-                    <div class="desktop-stat-card">
+                    <div class="desktop-stat-card clicavel" onclick="abrirListaFinanceiro('recebido')" title="Ver clientes que pagaram">
                         <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
                         <div class="stat-title">Recebido (Mês)</div>
                         <div class="stat-value" id="deskFinRecebido">R$ 0,00</div>
                         <div class="stat-sub">Atualizado em tempo real</div>
                     </div>
-                    <div class="desktop-stat-card">
+                    <div class="desktop-stat-card clicavel" onclick="abrirListaFinanceiro('areceber')" title="Ver clientes pendentes">
                         <div class="stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
                         <div class="stat-title">A Receber</div>
                         <div class="stat-value" id="deskFinPendente">R$ 0,00</div>
@@ -1372,7 +1412,7 @@
                         <div class="stat-value" id="deskFinTotalClientes">0</div>
                         <div class="stat-sub">Clientes ativos</div>
                     </div>
-                    <div class="desktop-stat-card">
+                    <div class="desktop-stat-card clicavel" onclick="abrirListaFinanceiro('geral')" title="Ver todos os clientes">
                         <div class="stat-icon purple"><i class="bi bi-graph-up-arrow"></i></div>
                         <div class="stat-title">Lucro Geral</div>
                         <div class="stat-value" id="deskFinGeral">R$ 0,00</div>
@@ -1778,6 +1818,27 @@
                 <div class="cliente-info mb-3" id="acoesInfoResumo"></div>
                 <hr class="border-secondary">
                 <div class="modal-acoes-grid" id="acoesGrid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================
+     ✅ NOVO: MODAL LISTA FINANCEIRO
+     ======================================================================== -->
+<div class="modal fade" id="modalListaFinanceiro" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="finListaTitulo">💰 Lista</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="finListaConteudo"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <small class="text-secondary" id="finListaQtd">0 itens</small>
+                <strong class="text-success fs-6" id="finListaTotal">R$ 0,00</strong>
             </div>
         </div>
     </div>
@@ -2653,6 +2714,134 @@
         };
         
         exec();
+    }
+
+    // =========================================================================
+    // ✅ NOVO: FUNÇÕES DA LISTA FINANCEIRO
+    // =========================================================================
+    function formatarDataBRString(data) {
+        if (!data) return '-';
+        let str = String(data);
+        if (str.includes('T')) str = str.split('T')[0];
+        let partes = str.split('-');
+        if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        return str;
+    }
+
+    function abrirListaFinanceiro(tipo) {
+        const filterMesEl = document.getElementById('filterMes');
+        const dataFiltro = filterMesEl ? filterMesEl.value : '';
+        const mesFiltro = dataFiltro ? dataFiltro.slice(0, 7) : '';
+
+        const clientesAtivos = clientes.filter(c => c.status !== 'deletado');
+        let titulo = '';
+        let listaHtml = '';
+        let total = 0;
+        let qtd = 0;
+
+        const getMesPagamento = (isoDate) => {
+            if (!isoDate) return '';
+            const d = new Date(isoDate);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        };
+
+        const renderItem = (item) => {
+            qtd++;
+            total += item.valor;
+            const dataExibir = item.data ? formatarDataBRString(item.data) : '-';
+            return `
+                <div class="fin-lista-item">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div style="min-width:0; flex:1;">
+                            <strong class="d-block text-truncate fin-nome">${item.nome || 'Sem nome'}</strong>
+                            <small class="fin-tipo">${item.tipo}</small>
+                        </div>
+                        <span class="badge ${item.badgeClass} ms-2">${item.badge}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mt-1">
+                        <span class="fin-data"><i class="bi bi-calendar3 me-1"></i>${dataExibir}</span>
+                        <span class="fin-valor">R$ ${item.valor.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        };
+
+        if (tipo === 'recebido') {
+            titulo = '💰 Recebido no Mês';
+            const recebidos = clientesAtivos.filter(c => {
+                if (!c.ultimoPagamento) return false;
+                const mes = getMesPagamento(c.ultimoPagamento);
+                return !mesFiltro || mes === mesFiltro;
+            });
+            const revendasRenovadas = (renovacoesRevenda || []).filter(r => {
+                if (!r.data) return false;
+                const mes = getMesPagamento(r.data);
+                return !mesFiltro || mes === mesFiltro;
+            });
+
+            recebidos.forEach(c => {
+                listaHtml += renderItem({
+                    nome: c.nome,
+                    tipo: 'Cliente',
+                    valor: parseFloat(c.valor) || 0,
+                    data: c.ultimoPagamento,
+                    badge: 'PAGO',
+                    badgeClass: 'bg-success'
+                });
+            });
+            revendasRenovadas.forEach(r => {
+                listaHtml += renderItem({
+                    nome: r.revendaNome,
+                    tipo: 'Revenda',
+                    valor: parseFloat(r.valor) || 0,
+                    data: r.data,
+                    badge: 'RENOVADA',
+                    badgeClass: 'bg-info text-dark'
+                });
+            });
+
+            if (!listaHtml) listaHtml = '<div class="text-center text-secondary py-4">Nenhum pagamento registrado no período.</div>';
+
+        } else if (tipo === 'areceber') {
+            titulo = '⏳ A Receber';
+            const pendentes = clientesAtivos.filter(c => {
+                if (!c.ultimoPagamento) return true;
+                const mes = getMesPagamento(c.ultimoPagamento);
+                return mesFiltro && mes !== mesFiltro;
+            });
+            pendentes.forEach(c => {
+                listaHtml += renderItem({
+                    nome: c.nome,
+                    tipo: 'Cliente',
+                    valor: parseFloat(c.valor) || 0,
+                    data: c.data,
+                    badge: 'PENDENTE',
+                    badgeClass: 'bg-warning text-dark'
+                });
+            });
+            if (!listaHtml) listaHtml = '<div class="text-center text-secondary py-4">Nenhum cliente pendente. 🎉</div>';
+
+        } else if (tipo === 'geral') {
+            titulo = '📊 Lucro Geral - Todos os Clientes';
+            clientesAtivos.forEach(c => {
+                listaHtml += renderItem({
+                    nome: c.nome,
+                    tipo: 'Cliente',
+                    valor: parseFloat(c.valor) || 0,
+                    data: c.data,
+                    badge: (c.painel || 'central').toUpperCase(),
+                    badgeClass: 'bg-secondary'
+                });
+            });
+            if (!listaHtml) listaHtml = '<div class="text-center text-secondary py-4">Nenhum cliente cadastrado.</div>';
+        }
+
+        document.getElementById('finListaTitulo').innerText = titulo;
+        document.getElementById('finListaConteudo').innerHTML = listaHtml;
+        document.getElementById('finListaQtd').innerText = `${qtd} ${qtd === 1 ? 'item' : 'itens'}`;
+        document.getElementById('finListaTotal').innerText = `R$ ${total.toFixed(2)}`;
+
+        new bootstrap.Modal(document.getElementById('modalListaFinanceiro')).show();
     }
 
     // =========================================================================
@@ -3626,7 +3815,7 @@
     window.enviarWhatsAppRevenda = enviarWhatsAppRevenda;
     window.copiarLinkRevenda = copiarLinkRevenda;
     window.excluirRevenda = excluirRevenda;
-    window.renovarRevenda = renovarRevenda; // 🆕 exportado
+    window.renovarRevenda = renovarRevenda;
 
     // Desktop
     window.navegarDesktop = navegarDesktop;
@@ -3639,6 +3828,9 @@
     window.atualizarDisplayCreditoDesktop = atualizarDisplayCreditoDesktop;
     window.saveRevendaDesktop = saveRevendaDesktop;
     window.renderRevendasDesktop = renderRevendasDesktop;
+
+    // ✅ NOVO: exporta função da lista financeira
+    window.abrirListaFinanceiro = abrirListaFinanceiro;
 </script>
 </body>
 </html>

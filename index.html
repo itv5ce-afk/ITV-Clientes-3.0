@@ -1233,7 +1233,7 @@
         submenu.classList.toggle('open');
     }
 
-    // ========== NOVO: helper para identificar cliente expirado ==========
+    // ========== helper para identificar cliente expirado ==========
     function isClienteExpirado(c) {
         if (!c || !c.data) return false;
         if (c.status === 'deletado' || c.status === 'apagar') return false;
@@ -1819,7 +1819,6 @@
         return str;
     }
 
-    // ========== MODIFICADO: exclui EXPIRADOS de "A Receber" e "Lucro Geral" ==========
     function abrirListaFinanceiro(tipo) {
         const filterMesEl = document.getElementById('filterMes');
         const dataFiltro = filterMesEl ? filterMesEl.value : '';
@@ -1896,7 +1895,6 @@
 
         } else if (tipo === 'areceber') {
             titulo = '⏳ A Receber';
-            // 🔥 NOVO: excluir clientes EXPIRADOS desta lista
             const pendentes = clientesAtivos.filter(c => {
                 if (isClienteExpirado(c)) return false;
                 if (!c.ultimoPagamento) return true;
@@ -1917,7 +1915,6 @@
 
         } else if (tipo === 'geral') {
             titulo = '📊 Lucro Geral - Todos os Clientes';
-            // 🔥 NOVO: excluir clientes EXPIRADOS desta lista
             clientesAtivos.forEach(c => {
                 if (isClienteExpirado(c)) return;
                 listaHtml += renderItem({
@@ -2588,25 +2585,38 @@
         return dataISO;
     }
     
+    // ========== RENOVAÇÃO AJUSTADA ==========
+    // Se o cliente estiver EXPIRADO (data de vencimento já passou),
+    // a renovação parte da DATA DO DIA ATUAL (hoje) + 1 mês.
+    // Se ainda estiver dentro do prazo (ativo ou a vencer), mantém
+    // a regra antiga: soma 1 mês sobre a data atual de vencimento.
     function renovarCliente(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
         const painel = cliente.painel || 'central';
         if(!consumirCredito(painel)) return;
 
-        let novaDataISO = "";
+        // Verifica se o cliente está EXPIRADO (comparação por data)
+        let expirado = false;
+        let dataBase = null;
+
         if (cliente.data) {
             let partes = cliente.data.split('-');
             if (partes.length === 3) {
-                let dataBase = new Date(partes[0], partes[1] - 1, partes[2]);
-                dataBase.setMonth(dataBase.getMonth() + 1);
-                const ano = dataBase.getFullYear();
-                const mes = String(dataBase.getMonth() + 1).padStart(2, '0');
-                const dia = String(dataBase.getDate()).padStart(2, '0');
-                novaDataISO = `${ano}-${mes}-${dia}`;
+                dataBase = new Date(partes[0], partes[1] - 1, partes[2]);
+                const hojeZerado = new Date();
+                hojeZerado.setHours(0, 0, 0, 0);
+                if (dataBase < hojeZerado) expirado = true;
             }
         }
-        if (!novaDataISO) novaDataISO = addOneMonthFromToday();
+
+        // 🔥 Regra nova: cliente EXPIRADO renova a partir do DIA ATUAL
+        if (expirado || !dataBase) {
+            dataBase = new Date(); // data do dia atual
+        }
+
+        dataBase.setMonth(dataBase.getMonth() + 1);
+        const novaDataISO = `${dataBase.getFullYear()}-${String(dataBase.getMonth() + 1).padStart(2, '0')}-${String(dataBase.getDate()).padStart(2, '0')}`;
 
         const novaDataBR = formatarDataBR(novaDataISO);
         const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
@@ -2792,7 +2802,6 @@
         else alert("Telefone não informado.");
     }
     
-    // ========== MODIFICADO: exclui EXPIRADOS de "A Receber" e "Lucro Geral" ==========
     function renderFinanceiro() {
         const filterMesEl = document.getElementById('filterMes');
         if (!filterMesEl) return;
@@ -2818,12 +2827,10 @@
             }
             const pagouNoMes = !mesFiltro || mesPagamentoLocal === mesFiltro;
             
-            // Recebido: mantém lógica original (todos que pagaram no mês)
             if(pagouNoMes) {
                 recebidoMesClientes += val;
             }
             
-            // 🔥 NOVO: excluir EXPIRADOS do Lucro Geral, Total Clientes e A Receber
             if (!expirado) {
                 totalGeral += val;
                 totalActive++;
@@ -2831,7 +2838,6 @@
             }
         });
 
-        // Revendas renovadas (adiciona em Recebido Mês mas NÃO altera A Receber)
         let recebidoMesRevendas = 0;
         const listaRenovacoes = renovacoesRevenda || [];
         listaRenovacoes.forEach(r => {

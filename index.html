@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <link rel="icon" type="image/png" href="https://github.com/itv5ce-afk/LOGO_ITVPLAYER/raw/refs/heads/main/20211122_192815.ico">
-    <title>ITVClientes.3.6</title>
+    <title>ITVClientes.3.7</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
@@ -353,6 +353,15 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="paineisCustomMobile"></div>
+
+                <button class="btn btn-primary w-100 mt-2 fw-bold" onclick="abrirModalCriarPainel()">
+                    <i class="bi bi-plus-circle me-1"></i> CRIAR PAINEL
+                </button>
+                <button class="btn btn-danger w-100 mt-2 fw-bold" onclick="abrirModalDeletarPainel()">
+                    <i class="bi bi-trash me-1"></i> DELETAR PAINEL
+                </button>
 
                 <button class="btn btn-success w-100 mt-2" onclick="saveSettings()">💾 Salvar Configurações</button>
             </div>
@@ -793,6 +802,17 @@
                         </div>
                     </div>
 
+                    <div class="row g-3 mt-1" id="paineisCustomDesktop"></div>
+
+                    <div class="d-flex gap-2 mt-3 flex-wrap">
+                        <button class="btn btn-primary px-4 py-2 rounded-pill fw-bold" onclick="abrirModalCriarPainel()">
+                            <i class="bi bi-plus-circle me-2"></i>CRIAR PAINEL
+                        </button>
+                        <button class="btn btn-danger px-4 py-2 rounded-pill fw-bold" onclick="abrirModalDeletarPainel()">
+                            <i class="bi bi-trash me-2"></i>DELETAR PAINEL
+                        </button>
+                    </div>
+
                     <button class="btn btn-success px-4 py-2 rounded-pill fw-bold mt-3" onclick="saveSettingsDesktop()">
                         <i class="bi bi-save me-2"></i>Salvar Todas as Configurações
                     </button>
@@ -961,6 +981,42 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalCriarPainel" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">➕ Criar Novo Painel</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="small text-secondary">Nome do Painel:</label>
+                <input type="text" id="novoPainelNome" class="form-control mb-2" placeholder="Ex: PREMIUM">
+                <label class="small text-secondary">Link do Painel (opcional):</label>
+                <input type="text" id="novoPainelUrl" class="form-control mb-2" placeholder="https://...">
+                <label class="small text-secondary">Créditos Iniciais:</label>
+                <input type="number" id="novoPainelCreditos" class="form-control mb-2" min="0" value="0">
+                <button class="btn btn-success w-100 mt-2 rounded-pill fw-bold" onclick="salvarNovoPainel()">
+                    <i class="bi bi-check-circle me-2"></i>Criar Painel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDeletarPainel" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">🗑️ Deletar Painel</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="listaDeletarPaineis"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade modal-banco-itv" id="modalBancoItv" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -1124,7 +1180,8 @@
         nomePainel3: "ZEUS",
         togglePainel1: true,
         togglePainel2: true,
-        togglePainel3: true
+        togglePainel3: true,
+        paineisCustom: []
     };
     let currentFilter = 'ativos';
     let currentFilterDesktop = 'ativos';
@@ -1140,6 +1197,244 @@
     }
     detectarDispositivo();
     window.addEventListener('resize', detectarDispositivo);
+
+    // ============ HELPERS DE PAINEL ============
+    function getNomePainelById(id) {
+        if (id === 'central') return config.nomePainel1 || 'CENTRAL';
+        if (id === 'warez') return config.nomePainel2 || 'WAREZ';
+        if (id === 'zeus') return config.nomePainel3 || 'ZEUS';
+        if (id === 'itvplayer') return 'ITVPlayer';
+        const p = (config.paineisCustom || []).find(x => x.id === id);
+        return p ? p.nome : (id || 'ITV');
+    }
+
+    function isPainelCustom(id) {
+        return typeof id === 'string' && id.indexOf('custom_') === 0;
+    }
+
+    function getCustomPainel(id) {
+        return (config.paineisCustom || []).find(x => x.id === id);
+    }
+
+    function persistirPaineisCustom() {
+        if (!usuarioLogadoUid) return Promise.resolve();
+        return db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral")
+            .set({ paineisCustom: config.paineisCustom || [] }, { merge: true });
+    }
+
+    function abrirModalCriarPainel() {
+        const nomeEl = document.getElementById('novoPainelNome');
+        const urlEl = document.getElementById('novoPainelUrl');
+        const credEl = document.getElementById('novoPainelCreditos');
+        if (nomeEl) nomeEl.value = '';
+        if (urlEl) urlEl.value = '';
+        if (credEl) credEl.value = '0';
+        new bootstrap.Modal(document.getElementById('modalCriarPainel')).show();
+    }
+
+    function salvarNovoPainel() {
+        if (!usuarioLogadoUid) return alert("Faça login primeiro.");
+        const nome = (document.getElementById('novoPainelNome').value || '').trim();
+        const url = (document.getElementById('novoPainelUrl').value || '').trim();
+        const creditos = parseInt(document.getElementById('novoPainelCreditos').value) || 0;
+
+        if (!nome) return alert("Informe o nome do painel!");
+
+        if (!config.paineisCustom) config.paineisCustom = [];
+        const novoId = 'custom_' + Date.now();
+        config.paineisCustom.push({ id: novoId, nome: nome, url: url, creditos: creditos, toggle: true });
+
+        persistirPaineisCustom().then(() => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalCriarPainel'));
+            if (modal) modal.hide();
+            renderPaineisCustom();
+            atualizarSelectPaineis();
+            renderPaineisAtivos();
+            renderPaineisAtivosDesktop();
+            alert(`✅ Painel "${nome}" criado com sucesso!`);
+        }).catch(err => alert("Erro ao criar painel: " + err.message));
+    }
+
+    function abrirModalDeletarPainel() {
+        renderListaDeletarPaineis();
+        new bootstrap.Modal(document.getElementById('modalDeletarPainel')).show();
+    }
+
+    function renderListaDeletarPaineis() {
+        const container = document.getElementById('listaDeletarPaineis');
+        if (!container) return;
+        const custom = config.paineisCustom || [];
+
+        if (custom.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-secondary py-4">
+                    <i class="bi bi-info-circle" style="font-size:2rem; opacity:0.5;"></i>
+                    <p class="mt-2 mb-1">Nenhum painel personalizado cadastrado.</p>
+                    <small class="text-muted">Os painéis padrão (CENTRAL, WAREZ, ZEUS) não podem ser deletados.<br>Use o toggle para ocultá-los.</small>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = custom.map(p => `
+            <div class="d-flex align-items-center justify-content-between p-3 mb-2" style="background:#1a1a1a; border:1px solid #333; border-radius:12px;">
+                <div style="min-width:0; flex:1;">
+                    <strong class="d-block text-white">⭐ ${p.nome}</strong>
+                    <small class="text-secondary">${p.creditos || 0} créditos</small>
+                </div>
+                <button class="btn btn-danger btn-sm ms-2 fw-bold" onclick="deletarPainelCustom('${p.id}')">
+                    <i class="bi bi-trash"></i> Deletar
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function deletarPainelCustom(id) {
+        const p = getCustomPainel(id);
+        if (!p) return;
+        if (!confirm(`Tem certeza que deseja deletar o painel "${p.nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+
+        config.paineisCustom = (config.paineisCustom || []).filter(x => x.id !== id);
+
+        persistirPaineisCustom().then(() => {
+            renderPaineisCustom();
+            atualizarSelectPaineis();
+            renderListaDeletarPaineis();
+            renderPaineisAtivos();
+            renderPaineisAtivosDesktop();
+            alert("✅ Painel deletado!");
+        }).catch(err => alert("Erro ao deletar painel: " + err.message));
+    }
+
+    function renderPaineisCustom() {
+        const paineis = config.paineisCustom || [];
+
+        // Mobile
+        const mob = document.getElementById('paineisCustomMobile');
+        if (mob) {
+            mob.innerHTML = paineis.map(p => `
+                <div class="painel-config-card">
+                    <div class="toggle-container">
+                        <h6 class="m-0"><i class="bi bi-star-fill text-success"></i> ${p.nome}</h6>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${p.toggle !== false ? 'checked' : ''} onchange="togglePainelCustom('${p.id}', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <label class="small text-secondary">📝 Nome do Painel:</label>
+                    <input type="text" class="form-control mb-2" value="${p.nome}" onchange="updatePainelCustom('${p.id}', 'nome', this.value)">
+                    <label class="small text-secondary">🔗 Link do Painel:</label>
+                    <input type="text" class="form-control mb-2" value="${p.url || ''}" onchange="updatePainelCustom('${p.id}', 'url', this.value)">
+                    <label class="small text-secondary">💳 Quantidade de Créditos:</label>
+                    <div class="creditos-display">
+                        <div>
+                            <div class="cred-label">Disponíveis</div>
+                            <div class="cred-value">${p.creditos || 0}</div>
+                        </div>
+                        <div class="creditos-controls">
+                            <button class="btn-menos" onclick="ajustarCreditoCustom('${p.id}', -1)">−</button>
+                            <input type="number" class="form-control" value="${p.creditos || 0}" min="0" onchange="updatePainelCustom('${p.id}', 'creditos', parseInt(this.value)||0)">
+                            <button class="btn-mais" onclick="ajustarCreditoCustom('${p.id}', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Desktop
+        const desk = document.getElementById('paineisCustomDesktop');
+        if (desk) {
+            desk.innerHTML = paineis.map(p => `
+                <div class="col-md-4">
+                    <div class="painel-config-card">
+                        <div class="toggle-container">
+                            <h6 class="m-0"><i class="bi bi-star-fill text-success"></i> ${p.nome}</h6>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${p.toggle !== false ? 'checked' : ''} onchange="togglePainelCustom('${p.id}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <label class="small text-secondary">📝 Nome:</label>
+                        <input type="text" class="form-control mb-2" value="${p.nome}" onchange="updatePainelCustom('${p.id}', 'nome', this.value)">
+                        <label class="small text-secondary">🔗 Link:</label>
+                        <input type="text" class="form-control mb-2" value="${p.url || ''}" onchange="updatePainelCustom('${p.id}', 'url', this.value)">
+                        <label class="small text-secondary">💳 Créditos:</label>
+                        <div class="creditos-display">
+                            <div>
+                                <div class="cred-label">Disponíveis</div>
+                                <div class="cred-value">${p.creditos || 0}</div>
+                            </div>
+                            <div class="creditos-controls">
+                                <button class="btn-menos" onclick="ajustarCreditoCustom('${p.id}', -1)">−</button>
+                                <input type="number" class="form-control" value="${p.creditos || 0}" min="0" onchange="updatePainelCustom('${p.id}', 'creditos', parseInt(this.value)||0)">
+                                <button class="btn-mais" onclick="ajustarCreditoCustom('${p.id}', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    function togglePainelCustom(id, checked) {
+        const p = getCustomPainel(id);
+        if (!p) return;
+        p.toggle = checked;
+        persistirPaineisCustom().then(() => {
+            atualizarSelectPaineis();
+            renderPaineisAtivos();
+            renderPaineisAtivosDesktop();
+        });
+    }
+
+    function updatePainelCustom(id, field, value) {
+        const p = getCustomPainel(id);
+        if (!p) return;
+        p[field] = value;
+        persistirPaineisCustom().then(() => {
+            atualizarSelectPaineis();
+            renderPaineisAtivos();
+            renderPaineisAtivosDesktop();
+        });
+    }
+
+    function ajustarCreditoCustom(id, delta) {
+        const p = getCustomPainel(id);
+        if (!p) return;
+        p.creditos = Math.max(0, (parseInt(p.creditos) || 0) + delta);
+        persistirPaineisCustom().then(() => {
+            renderPaineisCustom();
+            renderPaineisAtivos();
+            renderPaineisAtivosDesktop();
+        });
+    }
+
+    function atualizarSelectPaineis() {
+        const options = [
+            { value: 'central', label: `📡 ${config.nomePainel1 || 'CENTRAL'}` },
+            { value: 'warez', label: `⚡ ${config.nomePainel2 || 'WAREZ'}` },
+            { value: 'zeus', label: `🔥 ${config.nomePainel3 || 'ZEUS'}` },
+            { value: 'itvplayer', label: '🎬 ITVPlayer' }
+        ];
+        (config.paineisCustom || []).forEach(p => {
+            options.push({ value: p.id, label: `⭐ ${p.nome}` });
+        });
+
+        ['cPainel', 'deskCPainel', 'rPainel', 'deskRPainel'].forEach(id => {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            const current = sel.value;
+            sel.innerHTML = options.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            if (options.find(o => o.value === current)) sel.value = current;
+        });
+    }
+
+    function accessPanelCustom(id) {
+        const p = getCustomPainel(id);
+        if (p && p.url) window.open(p.url);
+        else alert("Configure a URL deste painel em Conf Painel.");
+    }
+
+    // ============ FIM HELPERS PAINEL ============
 
     function mudarViewPrincipal(view) {
         viewPrincipal = view;
@@ -1221,10 +1516,14 @@
             document.getElementById('deskCfgMsg').value = config.msg || "";
         } else if (view === 'clienteConfPainel') {
             sincronizarCamposPainelDesktop();
+            renderPaineisCustom();
+            atualizarSelectPaineis();
         } else if (view === 'clienteCadastrar') {
             limparFormClienteDesktop();
+            atualizarSelectPaineis();
         } else if (view === 'revendaCadastrar') {
             limparFormRevendaDesktop();
+            atualizarSelectPaineis();
         }
     }
 
@@ -1322,6 +1621,14 @@
                 <span class="badge-creditos">${config.credZeus || 0}</span>
             </button>`;
         }
+        (config.paineisCustom || []).forEach(p => {
+            if (p.toggle !== false) {
+                container.innerHTML += `<button class="desktop-painel-btn" onclick="accessPanelCustom('${p.id}')">
+                    <span>⭐ ${p.nome}</span>
+                    <span class="badge-creditos">${p.creditos || 0}</span>
+                </button>`;
+            }
+        });
     }
 
     function limparFormClienteDesktop() {
@@ -1477,6 +1784,7 @@
 
     function saveSettingsDesktop() {
         if(!usuarioLogadoUid) return;
+        const paineisCustomAtuais = config.paineisCustom || [];
         config = {
             msg: document.getElementById('deskCfgMsg') ? document.getElementById('deskCfgMsg').value : config.msg,
             p1: document.getElementById('deskUrl1') ? document.getElementById('deskUrl1').value : config.p1,
@@ -1490,7 +1798,8 @@
             nomePainel3: document.getElementById('deskNomePainel3') ? document.getElementById('deskNomePainel3').value || "ZEUS" : config.nomePainel3,
             togglePainel1: document.getElementById('deskTogglePainel1') ? document.getElementById('deskTogglePainel1').checked : config.togglePainel1,
             togglePainel2: document.getElementById('deskTogglePainel2') ? document.getElementById('deskTogglePainel2').checked : config.togglePainel2,
-            togglePainel3: document.getElementById('deskTogglePainel3') ? document.getElementById('deskTogglePainel3').checked : config.togglePainel3
+            togglePainel3: document.getElementById('deskTogglePainel3') ? document.getElementById('deskTogglePainel3').checked : config.togglePainel3,
+            paineisCustom: paineisCustomAtuais
         };
         db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral").set(config).then(() => {
             atualizarBadgesCreditosDesktop();
@@ -1503,6 +1812,8 @@
             document.getElementById('deskPainel3Label').innerText = `Painel 3 (${config.nomePainel3})`;
             renderPaineisAtivos();
             renderPaineisAtivosDesktop();
+            renderPaineisCustom();
+            atualizarSelectPaineis();
             alert("✅ Configurações salvas!");
         }).catch(err => alert("Erro: "+err.message));
     }
@@ -1560,7 +1871,7 @@
                 <div class="desktop-cliente-card" onclick="editarRevenda('${r.id}')">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="mb-0 text-warning" style="font-size:1.05rem;">${r.nome}</h5>
-                        <span class="badge bg-secondary">${(r.painel || 'central').toUpperCase()}</span>
+                        <span class="badge bg-secondary">${getNomePainelById(r.painel || 'central').toUpperCase()}</span>
                     </div>
                     <div class="cliente-info">
                         <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${r.user || '-'}</span></div>
@@ -1597,6 +1908,7 @@
             document.getElementById('rPass').value = "";
             document.getElementById('rLink').value = "";
         }
+        atualizarSelectPaineis();
         new bootstrap.Modal(document.getElementById('modalRevenda')).show();
     }
 
@@ -1644,7 +1956,7 @@
                 <div class="card-cliente" onclick="editarRevenda('${r.id}')">
                     <div class="d-flex justify-content-between align-items-start flex-wrap">
                         <h5 class="mb-1 text-warning">${r.nome}</h5>
-                        <span class="badge bg-secondary">${(r.painel || 'central').toUpperCase()}</span>
+                        <span class="badge bg-secondary">${getNomePainelById(r.painel || 'central').toUpperCase()}</span>
                     </div>
                     <div class="cliente-info">
                         <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${r.user || '-'}</span></div>
@@ -1672,6 +1984,7 @@
     function editarRevenda(id) {
         let r = revendas.find(i => i.id === id);
         if(r) {
+            atualizarSelectPaineis();
             document.getElementById('revEditId').value = r.id;
             document.getElementById('rNome').value = r.nome || "";
             document.getElementById('rTel').value = r.tel || "";
@@ -1690,11 +2003,7 @@
         if(!r) return alert("Revendedor não encontrado!");
         if(!r.tel) return alert("WhatsApp não cadastrado para este revendedor!");
         
-        let nomePainel = (r.painel || 'central').toUpperCase();
-        if (r.painel === 'central') nomePainel = config.nomePainel1 || 'CENTRAL';
-        else if (r.painel === 'warez') nomePainel = config.nomePainel2 || 'WAREZ';
-        else if (r.painel === 'zeus') nomePainel = config.nomePainel3 || 'ZEUS';
-        else if (r.painel === 'itvplayer') nomePainel = 'ITVPlayer';
+        const nomePainel = getNomePainelById(r.painel || 'central');
         
         const msg = `📺 *DADOS DE ACESSO - REVENDA ITV*\n\n` +
                     `👤 *Nome:* ${r.nome || '-'}\n` +
@@ -1737,21 +2046,28 @@
             return alert("⚠️ Informe o valor em R$ a ser cobrado.\nEdite o revendedor e defina o valor.");
         }
         
-        let chaveCredito = null;
+        const isCustom = isPainelCustom(painel);
         let creditosDisponiveis = 0;
+        let chaveCredito = null;
+
         if (painel !== 'itvplayer') {
-            chaveCredito = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
-            creditosDisponiveis = parseInt(config[chaveCredito]) || 0;
-            if (creditosDisponiveis < creditosQtd) {
-                return alert(`⚠️ Créditos insuficientes no Painel ${painel.toUpperCase()}!\n\nDisponível: ${creditosDisponiveis}\nNecessário: ${creditosQtd}`);
+            if (isCustom) {
+                const p = getCustomPainel(painel);
+                if (!p) return alert("⚠️ Painel personalizado não encontrado!");
+                creditosDisponiveis = parseInt(p.creditos) || 0;
+                if (creditosDisponiveis < creditosQtd) {
+                    return alert(`⚠️ Créditos insuficientes no Painel ${p.nome}!\n\nDisponível: ${creditosDisponiveis}\nNecessário: ${creditosQtd}`);
+                }
+            } else {
+                chaveCredito = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
+                creditosDisponiveis = parseInt(config[chaveCredito]) || 0;
+                if (creditosDisponiveis < creditosQtd) {
+                    return alert(`⚠️ Créditos insuficientes no Painel ${painel.toUpperCase()}!\n\nDisponível: ${creditosDisponiveis}\nNecessário: ${creditosQtd}`);
+                }
             }
         }
         
-        let nomePainel = painel.toUpperCase();
-        if (painel === 'central') nomePainel = config.nomePainel1 || 'CENTRAL';
-        else if (painel === 'warez') nomePainel = config.nomePainel2 || 'WAREZ';
-        else if (painel === 'zeus') nomePainel = config.nomePainel3 || 'ZEUS';
-        else if (painel === 'itvplayer') nomePainel = 'ITVPlayer';
+        const nomePainel = getNomePainelById(painel);
         
         const msgConfirm = `Confirmar renovação?\n\n` +
             `Revendedor: ${r.nome}\n` +
@@ -1773,18 +2089,26 @@
         
         const exec = async () => {
             try {
-                if (chaveCredito) {
-                    config[chaveCredito] = creditosDisponiveis - creditosQtd;
-                    await db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral")
-                        .update({ [chaveCredito]: config[chaveCredito] });
-                    
-                    const inputMobile = document.getElementById(chaveCredito);
-                    if (inputMobile) inputMobile.value = config[chaveCredito];
-                    const deskInput = document.getElementById('desk' + chaveCredito.charAt(0).toUpperCase() + chaveCredito.slice(1));
-                    if (deskInput) deskInput.value = config[chaveCredito];
-                    
-                    atualizarBadgesCreditos();
-                    atualizarBadgesCreditosDesktop();
+                if (painel !== 'itvplayer') {
+                    if (isCustom) {
+                        const p = getCustomPainel(painel);
+                        p.creditos = (parseInt(p.creditos) || 0) - creditosQtd;
+                        await db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral")
+                            .set({ paineisCustom: config.paineisCustom || [] }, { merge: true });
+                        renderPaineisCustom();
+                    } else {
+                        config[chaveCredito] = creditosDisponiveis - creditosQtd;
+                        await db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral")
+                            .update({ [chaveCredito]: config[chaveCredito] });
+                        
+                        const inputMobile = document.getElementById(chaveCredito);
+                        if (inputMobile) inputMobile.value = config[chaveCredito];
+                        const deskInput = document.getElementById('desk' + chaveCredito.charAt(0).toUpperCase() + chaveCredito.slice(1));
+                        if (deskInput) deskInput.value = config[chaveCredito];
+                        
+                        atualizarBadgesCreditos();
+                        atualizarBadgesCreditosDesktop();
+                    }
                 }
                 
                 await db.collection("usuarios").doc(usuarioLogadoUid).collection("renovacoesRevenda").add(renovacaoData);
@@ -1922,7 +2246,7 @@
                     tipo: 'Cliente',
                     valor: parseFloat(c.valor) || 0,
                     data: c.data,
-                    badge: (c.painel || 'central').toUpperCase(),
+                    badge: getNomePainelById(c.painel || 'central').toUpperCase(),
                     badgeClass: 'bg-secondary'
                 });
             });
@@ -2340,6 +2664,10 @@
         if (!estaAberta) {
             secao.classList.add('active');
             btn.classList.add('active');
+            if (idSecao === 'secPaineis') {
+                renderPaineisCustom();
+                atualizarSelectPaineis();
+            }
         }
     }
 
@@ -2372,6 +2700,27 @@
 
     function consumirCredito(painel) {
         if (painel === 'itvplayer') return true;
+
+        // Painel personalizado
+        if (isPainelCustom(painel)) {
+            const p = getCustomPainel(painel);
+            if (!p) { alert("⚠️ Painel não encontrado!"); return false; }
+            const atual = parseInt(p.creditos) || 0;
+            if (atual <= 0) {
+                alert(`⚠️ Sem créditos no Painel ${p.nome}! Adicione créditos no menu "Conf Painel".`);
+                return false;
+            }
+            p.creditos = atual - 1;
+            db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral")
+              .set({ paineisCustom: config.paineisCustom || [] }, { merge: true })
+              .catch(e => console.error("Erro ao atualizar crédito custom:", e));
+            renderPaineisCustom();
+            renderPaineisAtivos();
+            renderPaineisAtivosDesktop();
+            return true;
+        }
+
+        // Painéis padrão
         const chave = 'cred' + painel.charAt(0).toUpperCase() + painel.slice(1);
         const atual = parseInt(config[chave]) || 0;
         if (atual <= 0) {
@@ -2408,12 +2757,14 @@
                 config.togglePainel1 = config.togglePainel1 !== undefined ? config.togglePainel1 : true;
                 config.togglePainel2 = config.togglePainel2 !== undefined ? config.togglePainel2 : true;
                 config.togglePainel3 = config.togglePainel3 !== undefined ? config.togglePainel3 : true;
+                config.paineisCustom = Array.isArray(config.paineisCustom) ? config.paineisCustom : [];
             } else {
                 config = { 
                     msg: "", p1: "", p2: "", p3: "", 
                     credCentral: 0, credWarez: 0, credZeus: 0,
                     nomePainel1: "CENTRAL", nomePainel2: "WAREZ", nomePainel3: "ZEUS",
-                    togglePainel1: true, togglePainel2: true, togglePainel3: true
+                    togglePainel1: true, togglePainel2: true, togglePainel3: true,
+                    paineisCustom: []
                 };
             }
             const cfgMsgEl = document.getElementById('cfgMsg');
@@ -2454,6 +2805,8 @@
             sincronizarCamposPainelDesktop();
             renderPaineisAtivosDesktop();
             renderFinanceiroDesktop();
+            renderPaineisCustom();
+            atualizarSelectPaineis();
         });        
         
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").onSnapshot(snapshot => {
@@ -2482,6 +2835,7 @@
 
     function saveSettings() {
         if(!usuarioLogadoUid) return;
+        const paineisCustomAtuais = config.paineisCustom || [];
         config = {
             msg: document.getElementById('cfgMsg').value,
             p1: document.getElementById('url1').value,
@@ -2495,7 +2849,8 @@
             nomePainel3: document.getElementById('nomePainel3').value || "ZEUS",
             togglePainel1: document.getElementById('togglePainel1').checked,
             togglePainel2: document.getElementById('togglePainel2').checked,
-            togglePainel3: document.getElementById('togglePainel3').checked
+            togglePainel3: document.getElementById('togglePainel3').checked,
+            paineisCustom: paineisCustomAtuais
         };
         db.collection("usuarios").doc(usuarioLogadoUid).collection("config").doc("geral").set(config).then(() => {
             atualizarBadgesCreditos();
@@ -2508,6 +2863,8 @@
             document.getElementById('deskPainel3Label').innerText = `Painel 3 (${config.nomePainel3})`;
             renderPaineisAtivos();
             renderPaineisAtivosDesktop();
+            renderPaineisCustom();
+            atualizarSelectPaineis();
             alert("✅ Configurações salvas!");
         }).catch(err => alert("Erro: "+err.message));
     }
@@ -2525,6 +2882,11 @@
         if(config.togglePainel3) {
             container.innerHTML += `<button class="btn btn-outline-light btn-sm w-100" onclick="accessPanel(3)">🔥 ${config.nomePainel3} <span id="badgeZeus" class="badge-creditos">${config.credZeus || 0}</span></button>`;
         }
+        (config.paineisCustom || []).forEach(p => {
+            if (p.toggle !== false) {
+                container.innerHTML += `<button class="btn btn-outline-light btn-sm w-100" onclick="accessPanelCustom('${p.id}')">⭐ ${p.nome} <span class="badge-creditos">${p.creditos || 0}</span></button>`;
+            }
+        });
     }
 
     function showModalCadastro(id = "") {
@@ -2535,6 +2897,7 @@
             document.getElementById('cUrl').value = ""; document.getElementById('cTel').value = ""; document.getElementById('cObs').value = "";
             document.getElementById('cPainel').value = "central";
         }
+        atualizarSelectPaineis();
         new bootstrap.Modal(document.getElementById('modalCadastro')).show();
     }
 
@@ -2585,18 +2948,12 @@
         return dataISO;
     }
     
-    // ========== RENOVAÇÃO AJUSTADA ==========
-    // Se o cliente estiver EXPIRADO (data de vencimento já passou),
-    // a renovação parte da DATA DO DIA ATUAL (hoje) + 1 mês.
-    // Se ainda estiver dentro do prazo (ativo ou a vencer), mantém
-    // a regra antiga: soma 1 mês sobre a data atual de vencimento.
     function renovarCliente(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
         const painel = cliente.painel || 'central';
         if(!consumirCredito(painel)) return;
 
-        // Verifica se o cliente está EXPIRADO (comparação por data)
         let expirado = false;
         let dataBase = null;
 
@@ -2610,9 +2967,8 @@
             }
         }
 
-        // 🔥 Regra nova: cliente EXPIRADO renova a partir do DIA ATUAL
         if (expirado || !dataBase) {
-            dataBase = new Date(); // data do dia atual
+            dataBase = new Date();
         }
 
         dataBase.setMonth(dataBase.getMonth() + 1);
@@ -2620,11 +2976,7 @@
 
         const novaDataBR = formatarDataBR(novaDataISO);
         const valorFormat = `R$ ${cliente.valor.toFixed(2)}`;
-        let nomePainelProvedor = 'ITV';
-        if (painel === 'central') nomePainelProvedor = config.nomePainel1 || 'CENTRAL';
-        else if (painel === 'warez') nomePainelProvedor = config.nomePainel2 || 'WAREZ';
-        else if (painel === 'zeus') nomePainelProvedor = config.nomePainel3 || 'ZEUS';
-        else if (painel === 'itvplayer') nomePainelProvedor = 'ITVPlayer';
+        const nomePainelProvedor = getNomePainelById(painel);
 
         const msg = `✅𝕊𝔼𝕌 ℙ𝔸𝔾𝔸𝕄𝔼ℕ𝕋𝕆 𝔽𝕆𝕀 ℂ𝕆ℕ𝔽𝕀ℝ𝕄𝔸𝔻𝕆!!\n\nNome: ${cliente.nome}\nPlano Familia: ${valorFormat}\nProvedor: ${nomePainelProvedor}\nUsuário: ${cliente.user}\nSenha: ${cliente.pass}\nUrl: ${cliente.url}\nVence: ${novaDataBR}\n\nDivirta-se!!`;
 
@@ -2690,7 +3042,7 @@
             <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${c.user || '-'}</span></div>
             <div class="info-item"><span class="info-label">Senha:</span><span class="info-value">${c.pass || '-'}</span></div>
             <div class="info-item"><span class="info-label">Valor:</span><span class="info-value">R$ ${c.valor.toFixed(2)}</span></div>
-            <div class="info-item"><span class="info-label">Painel:</span><span class="info-value">${(c.painel || 'central').toUpperCase()}</span></div>
+            <div class="info-item"><span class="info-label">Painel:</span><span class="info-value">${getNomePainelById(c.painel || 'central').toUpperCase()}</span></div>
             <div class="info-item info-full"><span class="info-label">Vencimento:</span><span class="info-value">${formatarDataBR(c.data)}</span></div>
         `;
         document.getElementById('acoesInfoResumo').innerHTML = infoHtml;
@@ -2867,6 +3219,7 @@
     function editCliente(id) {
         let c = clientes.find(i => i.id === id);
         if(c) {
+            atualizarSelectPaineis();
             document.getElementById('editId').value = c.id;
             document.getElementById('cNome').value = c.nome; document.getElementById('cUser').value = c.user; document.getElementById('cPass').value = c.pass;
             document.getElementById('cValor').value = c.valor; document.getElementById('cData').value = c.data; document.getElementById('cServ').value = c.serv || '';
@@ -2927,6 +3280,16 @@
     window.renderRevendasDesktop = renderRevendasDesktop;
 
     window.abrirListaFinanceiro = abrirListaFinanceiro;
+
+    // Novos exports - painéis customizados
+    window.abrirModalCriarPainel = abrirModalCriarPainel;
+    window.salvarNovoPainel = salvarNovoPainel;
+    window.abrirModalDeletarPainel = abrirModalDeletarPainel;
+    window.deletarPainelCustom = deletarPainelCustom;
+    window.togglePainelCustom = togglePainelCustom;
+    window.updatePainelCustom = updatePainelCustom;
+    window.ajustarCreditoCustom = ajustarCreditoCustom;
+    window.accessPanelCustom = accessPanelCustom;
 </script>
 </body>
 </html>
